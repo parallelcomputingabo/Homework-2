@@ -236,3 +236,25 @@ git push origin student-name
     - Use small test cases to debug your blocked and parallel implementations.
 
 Good luck, and enjoy optimizing your matrix multiplication!
+
+### Results
+In order to get more objective results, all of these are an average across 5 runs (naive time, blocked time, parallel time, speedups).
+My system has a maximum of 16 threads, and I tested with 2, 4, 8, and 16 threads but found that 2 threads work the best since matrices are small.
+Blocked results are slower compared to naive results, but that is also expected due to the size of matrices. 
+Paralellization and cache optimization are useful only when matrices are big enough, otherwise their overheads will make them slower than naive multiplication for small matrices.
+
+I provided a shell script **run_test.bat** which will run all 9 cases 5 times and save that to **results.txt** (both located in out/build/x64-Debug). I also provided **results.csv** file with results in csv format. Lastly, I provided a **results.ipynb** notebook to calculate average metrics.
+
+
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64  × 64  × 64         | 0.001820          | 0.003150            | 0.001971             | 0.599567×           | 0.931326×            |
+| 1         | 128 × 64  × 128        | 0.007134          | 0.012213            | 0.006315             | 0.596648×           | 1.146395×            |
+| 2         | 100 x 128 x 56         | 0.004972          | 0.007658            | 0.004033             | 0.651309×           | 1.238676×            |
+| 3         | 128 x 64  x 128        | 0.007388          | 0.011238            | 0.006139             | 0.658061×           | 1.215646×            |
+| 4         | 32  x 128 x 32         | 0.000872          | 0.001411            | 0.001214             | 0.625580×           | 0.726979×            |
+| 5         | 200 x 100 x 256        | 0.035313          | 0.056534            | 0.028929             | 0.626486×           | 1.220984×            |
+| 6         | 256 × 256 × 256        | 0.118653          | 0.178597            | 0.098928             | 0.664786×           | 1.203782×            |
+| 7         | 256 × 300 × 256        | 0.138863          | 0.207555            | 0.118014             | 0.669051×           | 1.184500×            |
+| 8         | 64  x 128 x 64         | 0.003496          | 0.005769            | 0.003319             | 0.608519×           | 1.073525×            |
+| 9         | 256 x 256 x 257        | 0.120380          | 0.179924            | 0.107247      | 0.669779×                  | 1.126244×            |
