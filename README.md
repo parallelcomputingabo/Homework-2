@@ -240,7 +240,7 @@ Good luck, and enjoy optimizing your matrix multiplication!
 ### Results
 In order to get more objective results, all of these are an average across 5 runs (naive time, blocked time, parallel time, speedups).
 My system has a maximum of 16 threads, and I tested with 2, 4, 8, and 16 threads but found that 2 threads work the best since matrices are small.
-Blocked results are slower compared to naive results, but that is also expected due to the size of matrices. 
+Blocked results are slower compared to naive results, but that is also expected due to the size of matrices. I tested with different block sizes (16, 32, 48, 64) and found that 64 is the best for my system.
 Paralellization and cache optimization are useful only when matrices are big enough, otherwise their overheads will make them slower than naive multiplication for small matrices.
 
 I provided a shell script **run_test.bat** which will run all 9 cases 5 times and save that to **results.txt** (both located in out/build/x64-Debug). I also provided **results.csv** file with results in csv format. Lastly, I provided a **results.ipynb** notebook to calculate average metrics.
