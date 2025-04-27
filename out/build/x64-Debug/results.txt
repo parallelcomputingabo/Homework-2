@@ -1,0 +1,401 @@
+Run 1 
+Case 0 (64x64x64):
+Naive time: 0.0019491 seconds
+Blocked time: 0.0026309 seconds
+Parallel time: 0.0018225 seconds
+Blocked speedup: 0.740849x
+Parallel speedup: 1.06947x
+ 
+Run 2 
+Case 0 (64x64x64):
+Naive time: 0.0017245 seconds
+Blocked time: 0.0028794 seconds
+Parallel time: 0.0018713 seconds
+Blocked speedup: 0.598909x
+Parallel speedup: 0.921552x
+ 
+Run 3 
+Case 0 (64x64x64):
+Naive time: 0.0019276 seconds
+Blocked time: 0.0026358 seconds
+Parallel time: 0.0022916 seconds
+Blocked speedup: 0.731315x
+Parallel speedup: 0.841159x
+ 
+Run 4 
+Case 0 (64x64x64):
+Naive time: 0.0017484 seconds
+Blocked time: 0.0034923 seconds
+Parallel time: 0.0021105 seconds
+Blocked speedup: 0.500644x
+Parallel speedup: 0.828429x
+ 
+Run 5 
+Case 0 (64x64x64):
+Naive time: 0.0017528 seconds
+Blocked time: 0.0041134 seconds
+Parallel time: 0.0017598 seconds
+Blocked speedup: 0.42612x
+Parallel speedup: 0.996022x
+ 
+Run 1 
+Case 1 (128x64x128):
+Naive time: 0.0076934 seconds
+Blocked time: 0.0108692 seconds
+Parallel time: 0.0063598 seconds
+Blocked speedup: 0.707817x
+Parallel speedup: 1.20969x
+ 
+Run 2 
+Case 1 (128x64x128):
+Naive time: 0.0071812 seconds
+Blocked time: 0.0107395 seconds
+Parallel time: 0.0056323 seconds
+Blocked speedup: 0.668672x
+Parallel speedup: 1.275x
+ 
+Run 3 
+Case 1 (128x64x128):
+Naive time: 0.0069771 seconds
+Blocked time: 0.0140177 seconds
+Parallel time: 0.0054505 seconds
+Blocked speedup: 0.497735x
+Parallel speedup: 1.28008x
+ 
+Run 4 
+Case 1 (128x64x128):
+Naive time: 0.0069607 seconds
+Blocked time: 0.014579 seconds
+Parallel time: 0.0076411 seconds
+Blocked speedup: 0.477447x
+Parallel speedup: 0.910955x
+ 
+Run 5 
+Case 1 (128x64x128):
+Naive time: 0.0068573 seconds
+Blocked time: 0.0108576 seconds
+Parallel time: 0.0064921 seconds
+Blocked speedup: 0.631567x
+Parallel speedup: 1.05625x
+ 
+Run 1 
+Case 2 (100x128x56):
+Naive time: 0.0049255 seconds
+Blocked time: 0.0073776 seconds
+Parallel time: 0.0042252 seconds
+Blocked speedup: 0.667629x
+Parallel speedup: 1.16574x
+ 
+Run 2 
+Case 2 (100x128x56):
+Naive time: 0.0054051 seconds
+Blocked time: 0.0072936 seconds
+Parallel time: 0.0037434 seconds
+Blocked speedup: 0.741074x
+Parallel speedup: 1.4439x
+ 
+Run 3 
+Case 2 (100x128x56):
+Naive time: 0.0047438 seconds
+Blocked time: 0.0082289 seconds
+Parallel time: 0.0043019 seconds
+Blocked speedup: 0.57648x
+Parallel speedup: 1.10272x
+ 
+Run 4 
+Case 2 (100x128x56):
+Naive time: 0.0047747 seconds
+Blocked time: 0.0075929 seconds
+Parallel time: 0.0037697 seconds
+Blocked speedup: 0.628837x
+Parallel speedup: 1.2666x
+ 
+Run 5 
+Case 2 (100x128x56):
+Naive time: 0.0050113 seconds
+Blocked time: 0.0077994 seconds
+Parallel time: 0.0041265 seconds
+Blocked speedup: 0.642524x
+Parallel speedup: 1.21442x
+ 
+Run 1 
+Case 3 (128x64x128):
+Naive time: 0.0070378 seconds
+Blocked time: 0.0111478 seconds
+Parallel time: 0.0055711 seconds
+Blocked speedup: 0.631317x
+Parallel speedup: 1.26327x
+ 
+Run 2 
+Case 3 (128x64x128):
+Naive time: 0.0077233 seconds
+Blocked time: 0.0107058 seconds
+Parallel time: 0.0060156 seconds
+Blocked speedup: 0.721413x
+Parallel speedup: 1.28388x
+ 
+Run 3 
+Case 3 (128x64x128):
+Naive time: 0.0082653 seconds
+Blocked time: 0.0116016 seconds
+Parallel time: 0.0072734 seconds
+Blocked speedup: 0.712428x
+Parallel speedup: 1.13637x
+ 
+Run 4 
+Case 3 (128x64x128):
+Naive time: 0.0069262 seconds
+Blocked time: 0.0116711 seconds
+Parallel time: 0.0051075 seconds
+Blocked speedup: 0.593449x
+Parallel speedup: 1.35608x
+ 
+Run 5 
+Case 3 (128x64x128):
+Naive time: 0.0069876 seconds
+Blocked time: 0.0110616 seconds
+Parallel time: 0.0067277 seconds
+Blocked speedup: 0.631699x
+Parallel speedup: 1.03863x
+ 
+Run 1 
+Case 4 (32x128x32):
+Naive time: 0.000886 seconds
+Blocked time: 0.0013438 seconds
+Parallel time: 0.0011742 seconds
+Blocked speedup: 0.659324x
+Parallel speedup: 0.754556x
+ 
+Run 2 
+Case 4 (32x128x32):
+Naive time: 0.0008753 seconds
+Blocked time: 0.0013222 seconds
+Parallel time: 0.0013788 seconds
+Blocked speedup: 0.662003x
+Parallel speedup: 0.634827x
+ 
+Run 3 
+Case 4 (32x128x32):
+Naive time: 0.0008718 seconds
+Blocked time: 0.0013157 seconds
+Parallel time: 0.001376 seconds
+Blocked speedup: 0.662613x
+Parallel speedup: 0.633576x
+ 
+Run 4 
+Case 4 (32x128x32):
+Naive time: 0.0008628 seconds
+Blocked time: 0.0013241 seconds
+Parallel time: 0.0010442 seconds
+Blocked speedup: 0.651612x
+Parallel speedup: 0.826279x
+ 
+Run 5 
+Case 4 (32x128x32):
+Naive time: 0.0008621 seconds
+Blocked time: 0.001751 seconds
+Parallel time: 0.0010973 seconds
+Blocked speedup: 0.492347x
+Parallel speedup: 0.785656x
+ 
+Run 1 
+Case 5 (200x100x256):
+Naive time: 0.0346385 seconds
+Blocked time: 0.0554081 seconds
+Parallel time: 0.0290946 seconds
+Blocked speedup: 0.625152x
+Parallel speedup: 1.19055x
+ 
+Run 2 
+Case 5 (200x100x256):
+Naive time: 0.0344072 seconds
+Blocked time: 0.0620351 seconds
+Parallel time: 0.028623 seconds
+Blocked speedup: 0.554641x
+Parallel speedup: 1.20208x
+ 
+Run 3 
+Case 5 (200x100x256):
+Naive time: 0.0358072 seconds
+Blocked time: 0.0553044 seconds
+Parallel time: 0.0286555 seconds
+Blocked speedup: 0.647457x
+Parallel speedup: 1.24958x
+ 
+Run 4 
+Case 5 (200x100x256):
+Naive time: 0.0366993 seconds
+Blocked time: 0.0544883 seconds
+Parallel time: 0.0287258 seconds
+Blocked speedup: 0.673526x
+Parallel speedup: 1.27757x
+ 
+Run 5 
+Case 5 (200x100x256):
+Naive time: 0.0350153 seconds
+Blocked time: 0.0554343 seconds
+Parallel time: 0.0295454 seconds
+Blocked speedup: 0.631654x
+Parallel speedup: 1.18514x
+
+Run 1 
+Case 6 (256x256x256):
+Naive time: 0.117985 seconds
+Blocked time: 0.184305 seconds
+Parallel time: 0.0973928 seconds
+Blocked speedup: 0.640164x
+Parallel speedup: 1.21144x
+ 
+Run 2 
+Case 6 (256x256x256):
+Naive time: 0.118687 seconds
+Blocked time: 0.183993 seconds
+Parallel time: 0.0894349 seconds
+Blocked speedup: 0.645064x
+Parallel speedup: 1.32708x
+ 
+Run 3 
+Case 6 (256x256x256):
+Naive time: 0.123785 seconds
+Blocked time: 0.176335 seconds
+Parallel time: 0.0996314 seconds
+Blocked speedup: 0.701989x
+Parallel speedup: 1.24243x
+ 
+Run 4 
+Case 6 (256x256x256):
+Naive time: 0.116994 seconds
+Blocked time: 0.176169 seconds
+Parallel time: 0.10174 seconds
+Blocked speedup: 0.664104x
+Parallel speedup: 1.14994x
+ 
+Run 5 
+Case 6 (256x256x256):
+Naive time: 0.115812 seconds
+Blocked time: 0.172182 seconds
+Parallel time: 0.106442 seconds
+Blocked speedup: 0.67261x
+Parallel speedup: 1.08802x
+
+Run 1 
+Case 7 (256x300x256):
+Naive time: 0.141622 seconds
+Blocked time: 0.208189 seconds
+Parallel time: 0.120195 seconds
+Blocked speedup: 0.680258x
+Parallel speedup: 1.17826x
+ 
+Run 2 
+Case 7 (256x300x256):
+Naive time: 0.135418 seconds
+Blocked time: 0.208156 seconds
+Parallel time: 0.105169 seconds
+Blocked speedup: 0.650558x
+Parallel speedup: 1.28762x
+ 
+Run 3 
+Case 7 (256x300x256):
+Naive time: 0.141095 seconds
+Blocked time: 0.207749 seconds
+Parallel time: 0.127369 seconds
+Blocked speedup: 0.679159x
+Parallel speedup: 1.10777x
+ 
+Run 4 
+Case 7 (256x300x256):
+Naive time: 0.137817 seconds
+Blocked time: 0.205558 seconds
+Parallel time: 0.12991 seconds
+Blocked speedup: 0.670457x
+Parallel speedup: 1.06087x
+ 
+Run 5 
+Case 7 (256x300x256):
+Naive time: 0.138365 seconds
+Blocked time: 0.208123 seconds
+Parallel time: 0.107428 seconds
+Blocked speedup: 0.664821x
+Parallel speedup: 1.28798x
+ 
+Run 1 
+Case 8 (64x128x64):
+Naive time: 0.0034567 seconds
+Blocked time: 0.0063227 seconds
+Parallel time: 0.0031273 seconds
+Blocked speedup: 0.546713x
+Parallel speedup: 1.10533x
+ 
+Run 2 
+Case 8 (64x128x64):
+Naive time: 0.0034725 seconds
+Blocked time: 0.0052857 seconds
+Parallel time: 0.0040551 seconds
+Blocked speedup: 0.656961x
+Parallel speedup: 0.856329x
+ 
+Run 3 
+Case 8 (64x128x64):
+Naive time: 0.0035413 seconds
+Blocked time: 0.0058553 seconds
+Parallel time: 0.0029047 seconds
+Blocked speedup: 0.604802x
+Parallel speedup: 1.21916x
+ 
+Run 4 
+Case 8 (64x128x64):
+Naive time: 0.0035259 seconds
+Blocked time: 0.0054567 seconds
+Parallel time: 0.0028657 seconds
+Blocked speedup: 0.64616x
+Parallel speedup: 1.23038x
+ 
+Run 5 
+Case 8 (64x128x64):
+Naive time: 0.0034832 seconds
+Blocked time: 0.0059242 seconds
+Parallel time: 0.0036419 seconds
+Blocked speedup: 0.587961x
+Parallel speedup: 0.956424x
+ 
+Run 1 
+Case 9 (256x256x257):
+Naive time: 0.123766 seconds
+Blocked time: 0.188032 seconds
+Parallel time: 0.111775 seconds
+Blocked speedup: 0.658222x
+Parallel speedup: 1.10728x
+ 
+Run 2 
+Case 9 (256x256x257):
+Naive time: 0.124791 seconds
+Blocked time: 0.17371 seconds
+Parallel time: 0.0988323 seconds
+Blocked speedup: 0.718387x
+Parallel speedup: 1.26266x
+ 
+Run 3 
+Case 9 (256x256x257):
+Naive time: 0.115502 seconds
+Blocked time: 0.179246 seconds
+Parallel time: 0.113637 seconds
+Blocked speedup: 0.644381x
+Parallel speedup: 1.01642x
+ 
+Run 4 
+Case 9 (256x256x257):
+Naive time: 0.118688 seconds
+Blocked time: 0.185247 seconds
+Parallel time: 0.103625 seconds
+Blocked speedup: 0.6407x
+Parallel speedup: 1.14535x
+ 
+Run 5 
+Case 9 (256x256x257):
+Naive time: 0.119152 seconds
+Blocked time: 0.173386 seconds
+Parallel time: 0.108368 seconds
+Blocked speedup: 0.687206x
+Parallel speedup: 1.09951x
+ 
+ 

@@ -1,0 +1,4 @@
+.vs
+out/build/x64-Debug/.cmake
+out/build/x64-Debug/CMakeFiles
+out/build/x64-Debug/Testing/Temporary
