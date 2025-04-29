@@ -84,10 +84,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Construct file paths
-    std::string folder = "data/" + std::to_string(case_number) + "/";
+    std::string folder = "../data/" + std::to_string(case_number) + "/";
     std::string input0_file = folder + "input0.raw";
     std::string input1_file = folder + "input1.raw";
-    std::string result_file = folder + "result.raw";
+    std::string result_native_file = folder + "result_native.raw";
+    std::string result_blocked_file = folder + "result_blocked.raw";
+    std::string result_parallel_file = folder + "result_parallel.raw";
     std::string reference_file = folder + "output.raw";
 
     // Allocate memory for result matrices
@@ -117,7 +119,7 @@ int main(int argc, char *argv[]) {
 
 
     // Validate naive result
-    bool naive_correct = validate_result(result_file, reference_file);
+    bool naive_correct = validate_result(result_native_file, reference_file);
     if (!naive_correct) {
         std::cerr << "Naive result validation failed for case " << case_number << std::endl;
     }
@@ -131,7 +133,7 @@ int main(int argc, char *argv[]) {
 
 
     // Validate blocked result
-    bool blocked_correct = validate_result(result_file, reference_file);
+    bool blocked_correct = validate_result(result_blocked_file, reference_file);
     if (!blocked_correct) {
         std::cerr << "Blocked result validation failed for case " << case_number << std::endl;
     }
@@ -145,7 +147,7 @@ int main(int argc, char *argv[]) {
 
 
     // Validate parallel result
-    bool parallel_correct = validate_result(result_file, reference_file);
+    bool parallel_correct = validate_result(result_parallel_file, reference_file);
     if (!parallel_correct) {
         std::cerr << "Parallel result validation failed for case " << case_number << std::endl;
     }
