@@ -5,8 +5,21 @@
 #include <cmath>
 #include <cstdint>
 
-void naive_matmul(double *C, double *A, double *B, uint32_t m, uint32_t n, uint32_t p) {
-    //TODO : Implement naive matrix multiplication
+// Native matrix multiplication
+void naive_matmul(double* C, double* A, double* B, uint32_t m, uint32_t n, uint32_t p) {
+    // Initialize the result matrix C to zero
+    for (uint32_t i = 0; i < m * p; ++i) {
+        C[i] = 0.0f;
+    }
+    
+    // Perform the matrix multiplication
+    for (uint32_t i = 0; i < m; ++i) { 
+        for (uint32_t j = 0; j < p; ++j) { 
+            for (uint32_t k = 0; k < n; ++k) { 
+                C[i * p + j] += A[i * n + k] * B[k * p + j];
+            }
+        }
+    }
 }
 
 void blocked_matmul(double *C, double *A, double *B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size) {
