@@ -3,6 +3,7 @@
 #include <string>
 #include <omp.h>
 #include <cmath>
+#include <cstdint>
 
 void naive_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
     //TODO : Implement naive matrix multiplication
