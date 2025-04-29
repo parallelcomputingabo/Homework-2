@@ -33,8 +33,17 @@ void parallel_matmul(double *C, double *A, double *B, uint32_t m, uint32_t n, ui
     // A is m x n, B is n x p, C is m x p
 }
 
-bool validate_result(const std::string &result_file, const std::string &reference_file) {
-   //TODO : Implement result validation
+// Result validation
+bool validate_result(const double* C, const double* D, int size, double epsilon = 1e-9) {
+    for (int i = 0; i < size; i++) {
+        if (std::abs(C[i] - D[i]) > epsilon) {
+            std::cout << "Mismatch at index " << i << ": " 
+                      << "Result = " << C[i] << ", Expected = " << D[i] 
+                      << ", Diff = " << std::abs(C[i] - D[i]) << std::endl;
+            return false;
+        }
+    }
+    return true;
 }
 
 // Read a matrix from text file (row-major)
@@ -74,13 +83,13 @@ void write_matrix(const std::string& path, const double* mat, uint32_t rows, uin
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <case_number>" << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
     int case_number = std::atoi(argv[1]);
     if (case_number < 0 || case_number > 9) {
         std::cerr << "Case number must be between 0 and 9" << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // Construct file paths
@@ -121,7 +130,7 @@ int main(int argc, char *argv[]) {
     write_matrix(result_native_file, C_naive, m, p);
 
     // Validate naive result
-    bool naive_correct = validate_result(result_native_file, reference_file);
+    bool naive_correct = validate_result(C_naive, D, m * p);
     if (!naive_correct) {
         std::cerr << "Naive result validation failed for case " << case_number << std::endl;
     }
@@ -136,7 +145,7 @@ int main(int argc, char *argv[]) {
     write_matrix(result_blocked_file, C_blocked, m, p);
 
     // Validate blocked result
-    bool blocked_correct = validate_result(result_blocked_file, reference_file);
+    bool blocked_correct = validate_result(C_blocked, D, m * p);
     if (!blocked_correct) {
         std::cerr << "Blocked result validation failed for case " << case_number << std::endl;
     }
@@ -151,7 +160,7 @@ int main(int argc, char *argv[]) {
     write_matrix(result_parallel_file, C_parallel, m, p);
 
     // Validate parallel result
-    bool parallel_correct = validate_result(result_parallel_file, reference_file);
+    bool parallel_correct = validate_result(C_parallel, D, m * p);
     if (!parallel_correct) {
         std::cerr << "Parallel result validation failed for case " << case_number << std::endl;
     }
@@ -172,5 +181,5 @@ int main(int argc, char *argv[]) {
     delete[] C_parallel;
     delete[] D;
 
-    return 0;
+    return EXIT_SUCCESS;
 }
