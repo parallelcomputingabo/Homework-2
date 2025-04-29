@@ -43,21 +43,28 @@ int main(int argc, char *argv[]) {
     std::string result_file = folder + "result.raw";
     std::string reference_file = folder + "output.raw";
 
-    // TODO Read input0.raw (matrix A)
-
-
-    // TODO Read input1.raw (matrix B)
-
-
     // Allocate memory for result matrices
+    uint32_t m, n_A, n_B, n, p, m_D, p_D;  // A is m x n, B is n x p, C is m x p
     float *C_naive = new float[m * p];
     float *C_blocked = new float[m * p];
     float *C_parallel = new float[m * p];
 
+    // TODO Read input0.raw (matrix A)
+    std::cout << "Reading matrix A from: " << input0_file << std::endl;
+    float* A;
+
+    // TODO Read input1.raw (matrix B)
+    std::cout << "Reading matrix B from: " << input1_file << std::endl;
+    float* B;
+
+    // Read dimensions and matrices from input0.raw and input1.raw
+    std::cout << "Reading matrix D from: " << reference_file << std::endl;
+    float* D;
+
     // Measure performance of naive_matmul
-    double start_time = omp_get_wtime();
+    float start_time = omp_get_wtime();
     naive_matmul(C_naive, A, B, m, n, p);
-    double naive_time = omp_get_wtime() - start_time;
+    float naive_time = omp_get_wtime() - start_time;
 
     // TODO Write naive result to file
 
@@ -71,7 +78,7 @@ int main(int argc, char *argv[]) {
     // Measure performance of blocked_matmul (use block_size = 32 as default)
     start_time = omp_get_wtime();
     blocked_matmul(C_blocked, A, B, m, n, p, 32);
-    double blocked_time = omp_get_wtime() - start_time;
+    float blocked_time = omp_get_wtime() - start_time;
 
     // TODO Write blocked result to file
 
@@ -85,7 +92,7 @@ int main(int argc, char *argv[]) {
     // Measure performance of parallel_matmul
     start_time = omp_get_wtime();
     parallel_matmul(C_parallel, A, B, m, n, p);
-    double parallel_time = omp_get_wtime() - start_time;
+    float parallel_time = omp_get_wtime() - start_time;
 
     // TODO Write parallel result to file
 
