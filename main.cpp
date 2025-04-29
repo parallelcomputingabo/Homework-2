@@ -24,6 +24,22 @@ bool validate_result(const std::string &result_file, const std::string &referenc
    //TODO : Implement result validation
 }
 
+// Read a matrix from text file (row-major)
+double* read_matrix(const std::string& path, uint32_t& rows, uint32_t& cols) {
+    std::ifstream in(path);
+    if (!in) {
+        std::cerr << "Error: cannot open file " << path << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    in >> rows >> cols;
+    double* mat = new double[static_cast<size_t>(rows) * cols];
+    for (uint32_t i = 0; i < rows * cols; ++i) {
+        in >> mat[i];
+    }
+    in.close();
+    return mat;
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <case_number>" << std::endl;
