@@ -92,13 +92,9 @@ int main(int argc, char *argv[]) {
     std::string result_parallel_file = folder + "result_parallel.raw";
     std::string reference_file = folder + "output.raw";
 
-    // Allocate memory for result matrices
+    
     uint32_t m, n_A, n_B, n, p, m_D, p_D;  // A is m x n, B is n x p, C is m x p
-    double *C_naive = new double[m * p];
-    double *C_blocked = new double[m * p];
-    double *C_parallel = new double[m * p];
-
-    // TODO Read input0.raw (matrix A)
+    // Read input0.raw (matrix A)
     std::cout << "Reading matrix A from: " << input0_file << std::endl;
     double* A = read_matrix(input0_file, m, n_A);
 
@@ -110,13 +106,19 @@ int main(int argc, char *argv[]) {
     std::cout << "Reading matrix D from: " << reference_file << std::endl;
     double* D = read_matrix(reference_file, m_D, p_D);
 
+    // Allocate memory for result matrices
+    double *C_naive = new double[m * p];
+    double *C_blocked = new double[m * p];
+    double *C_parallel = new double[m * p];
+
     // Measure performance of naive_matmul
     double start_time = omp_get_wtime();
     naive_matmul(C_naive, A, B, m, n, p);
     double naive_time = omp_get_wtime() - start_time;
 
     // TODO Write naive result to file
-
+    std::cout << "Writing native matmul result matrix C to: " << result_native_file << std::endl;
+    write_matrix(result_native_file, C_naive, m, p);
 
     // Validate naive result
     bool naive_correct = validate_result(result_native_file, reference_file);
@@ -130,7 +132,8 @@ int main(int argc, char *argv[]) {
     double blocked_time = omp_get_wtime() - start_time;
 
     // TODO Write blocked result to file
-
+    std::cout << "Writing blocked matmul result matrix C to: " << result_blocked_file << std::endl;
+    write_matrix(result_blocked_file, C_blocked, m, p);
 
     // Validate blocked result
     bool blocked_correct = validate_result(result_blocked_file, reference_file);
@@ -144,7 +147,8 @@ int main(int argc, char *argv[]) {
     double parallel_time = omp_get_wtime() - start_time;
 
     // TODO Write parallel result to file
-
+    std::cout << "Writing parallel matmul result matrix C to: " << result_parallel_file << std::endl;
+    write_matrix(result_parallel_file, C_parallel, m, p);
 
     // Validate parallel result
     bool parallel_correct = validate_result(result_parallel_file, reference_file);
@@ -166,6 +170,7 @@ int main(int argc, char *argv[]) {
     delete[] C_naive;
     delete[] C_blocked;
     delete[] C_parallel;
+    delete[] D;
 
     return 0;
 }
