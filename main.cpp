@@ -5,8 +5,8 @@
 #include <cmath>
 #include <cstdint>
 
-// Native matrix multiplication
-void naive_matmul(double* C, double* A, double* B, uint32_t m, uint32_t n, uint32_t p) {
+// naive matrix multiplication
+void naive_matmul(double *C, double *A, double *B, uint32_t m, uint32_t n, uint32_t p) {
     // Initialize the result matrix C to zero
     for (uint32_t i = 0; i < m * p; ++i) {
         C[i] = 0.0f;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
     std::string folder = "../data/" + std::to_string(case_number) + "/";
     std::string input0_file = folder + "input0.raw";
     std::string input1_file = folder + "input1.raw";
-    std::string result_native_file = folder + "result_native.raw";
+    std::string result_naive_file = folder + "result_naive.raw";
     std::string result_blocked_file = folder + "result_blocked.raw";
     std::string result_parallel_file = folder + "result_parallel.raw";
     std::string reference_file = folder + "output.raw";
@@ -126,8 +126,8 @@ int main(int argc, char *argv[]) {
     double naive_time = omp_get_wtime() - start_time;
 
     // TODO Write naive result to file
-    std::cout << "Writing native matmul result matrix C to: " << result_native_file << std::endl;
-    write_matrix(result_native_file, C_naive, m, p);
+    std::cout << "Writing naive matmul result matrix C to: " << result_naive_file << std::endl;
+    write_matrix(result_naive_file, C_naive, m, p);
 
     // Validate naive result
     bool naive_correct = validate_result(C_naive, D, m * p);
