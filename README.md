@@ -122,12 +122,20 @@ For each test case (0 through 9 in the `data` folder):
 
 Example table format:
 
-| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time[64 block size] (s) | Parallel Time[8 threads] (s) | Blocked Speedup | Parallel Speedup |
 |-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
-| 0         | 512 × 512 × 512        | 2.345          | 0.987            | 0.543             | 2.38×           | 4.32×            |
-
+| 0         | 64 × 64 × 64        | 0         | 0            | 0             | 0           | 0            | 0
+| 1         | 128 × 64 × 128        | 0.00199986          | 0.00200009            | 0.000999928             | 0.999881x           | 2x          |
+| 2         | 100x128x56        | 0.00199986           | 0.00200009            | 0.00100017             | 0.999881x           | 1.99952x            |
+| 3         | 128x64x128        | 0.00300002          | 0.00199986            | 0.000999928             | 1.50012x           | 3.00024x            |
+| 4         | 32x128x32        | 0          | 0            | 0             | 0           | 0            |
+| 5         | 200x100x256        | 0.0120001          | 0.0109999            | 0.00399995             | 1.09092x           | 3.00006x            |
+| 6         | 256x256x256        | 0.036          | 0.0419998            | 0.00600004             | 0.857147x           | 5.99996x            |
+| 7         | 256x300x256        | 0.0409999          | 0.043            | 0.00999999             | 0.953486x×           | 4.09999x            |
+| 8         | 64x128x64        | 0.000999928          | 0.00200009            | 0.000999928             | 0.49994x           | 1x×            |
+| 9         | 256x256x257        | 0.0319998          | 0.036            | 0.0079999             | 0.888884x           | 4.00003x            |
 ---
-
+Explanation: I tested all of the recommended configurations (Block size and number of threads) and the chosen ones had the best performances. For smaller matrixes the improvment almost doesn't exist as it takes very little time. Finally, I'm not sure why blocked mul almost never works better but even worst. My guess is that it is viable for only bigger matrixes and for the smaller ones it's just more instructions and conditions for the loops and it actually takes slightly more time.
 #### Matrix Storage and Memory Management
 
 - Continue using row-major order for all matrices, as in Assignment 1.
