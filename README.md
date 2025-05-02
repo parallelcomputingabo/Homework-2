@@ -6,233 +6,31 @@
 
 ## Homework Assignment 2: Optimizing Matrix Multiplication in C++
 
-**Due Date**: 08/05/2025
+### Results
 
-**Points**: 100
-
----
-
-### Assignment Overview
-
-Welcome to the second homework assignment of the Parallel Programming course! In Assignment 1, you implemented a naive
-matrix multiplication using a triple nested loop. In this assignment, you will optimize the performance of your naive
-implementation using two techniques:
-
-1. **Cache Optimization via Blocked Matrix Multiplication**: Improve data locality to reduce cache misses.
-2. **Parallel Matrix Multiplication using `OpenMP`**: Parallelize the computation across multiple threads.
-
-Your task is to implement both optimizations in the provided C++ `main.cpp` file, measure their performance, and compare the
-wall clock time of the naive, cache-optimized, and parallel implementations for each test case. This assignment builds
-on your Assignment 1 code, so ensure your naive implementation is correct before starting.
-
----
-
-### Technical Requirements
-
-#### 1. Cache Optimization (Blocked Matrix Multiplication)
-
-**Why Cache Optimization?**
-
-Modern CPUs rely on cache memory to reduce the latency of accessing data from main memory. Cache memory is faster but
-smaller, organized in cache lines (typically 64 bytes). When a CPU accesses a memory location, it fetches an entire
-cache line. Matrix multiplication can suffer from poor performance if memory accesses are not cache-friendly, leading to
-frequent cache misses.
-
-The naive matrix multiplication (with triple nested loops) accesses memory in a way that may not exploit spatial and
-temporal locality:
-
-- **Spatial Locality**: Accessing consecutive memory locations (e.g., elements in the same cache line).
-- **Temporal Locality**: Reusing the same data multiple times while it’s still in the cache.
-
-Blocked matrix multiplication divides the matrices into smaller submatrices (blocks) that fit into the cache. By
-performing computations on these blocks, you ensure that data is reused while it resides in the cache, reducing cache
-misses and improving performance.
-
-**Blocked Matrix Multiplication Pseudocode**
-
-Assume matrices \( A \) (m × n), \( B \) (n × p), and \( C \) (m × p) are stored in row-major order. The blocked matrix
-multiplication processes submatrices of size \( block_size × block_size \):
-
-```cpp
-// C = A * B
-for (ii = 0; ii < m; ii += block_size)
-    for (jj = 0; jj < p; jj += block_size)
-        for (kk = 0; kk < n; kk += block_size)
-            // Process block: C[ii:ii+block_size, jj:jj+block_size] += A[ii:ii+block_size, kk:kk+block_size] * B[kk:kk+block_size, jj:jj+block_size]
-            for (i = ii; i < min(ii + block_size, m); i++)
-                for (j = jj; j < min(jj + block_size, p); j++)
-                    for (k = kk; k < min(kk + block_size, n); k++)
-                        C[i * p + j] += A[i * n + k] * B[k * p + j]
-```
-
-- **block_size**: Chosen to ensure the block fits in the cache (e.g., 32, 64, or 128, depending on the system).
-- **Outer loops (ii, jj, kk)**: Iterate over blocks.
-- **Inner loops (i, j, k)**: Compute within a block, reusing data in the cache.
-
-**Task**: Implement the `blocked_matmul` function in the provided `main.cpp`. Experiment with different block sizes (e.g.,
-16, 32, 64) and report the best performance.
-
----
-
-#### 2. Parallel Matrix Multiplication with OpenMP
-
-**Why OpenMP?**
-
-`OpenMP` is a portable API for parallel programming in shared-memory systems. It allows you to parallelize loops with
-minimal code changes, distributing iterations across multiple threads. In matrix multiplication, the outer loop(s) can
-be parallelized, as each element of the output matrix \( C \) can be computed independently.
-
-**Parallelizing with OpenMP**
-
-Use OpenMP to parallelize the outer loop(s) of the naive matrix multiplication. For example, parallelize the loop over
-rows of \( C \):
-
-```cpp
-#pragma omp parallel for
-for (i = 0; i < m; i++)
-    for (j = 0; j < p; j++)
-        for (k = 0; k < n; k++)
-            C[i * p + j] += A[i * n + k] * B[k * p + j];
-```
-
-- The `#pragma omp parallel for` directive tells `OpenMP` to distribute iterations of the loop across available threads.
-- Ensure thread safety: Since each iteration writes to a distinct element of \( C \), this loop is safe to parallelize
-  without locks.
-- Use `omp_get_wtime()` to measure wall clock time for accurate performance comparisons.
-
-**Task**: Implement the `parallel_matmul` function in the provided `main.cpp` using `OpenMP`. Test with different numbers of
-threads (e.g., 2, 4, 8) by setting the environment variable `OMP_NUM_THREADS`.
-
----
-
-#### 3. Performance Measurement
-
-For each test case (0 through 9 in the `data` folder):
-
-- Measure the **wall clock time** for:
-    - Naive matrix multiplication (`naive_matmul`).
-    - Cache-optimized matrix multiplication (`blocked_matmul`).
-    - Parallel matrix multiplication (`parallel_matmul`).
-- Use `omp_get_wtime()` for timing, as it provides high-resolution wall clock time.
-- Report the times in a table in your submission README.md, including:
-    - Test case number.
-    - Matrix dimensions (m × n × p).
-    - Wall clock time for each implementation (in seconds).
-    - Speedup of blocked and parallel implementations over the naive implementation.
-
-Example table format:
-
-| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
-|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
-| 0         | 512 × 512 × 512        | 2.345          | 0.987            | 0.543             | 2.38×           | 4.32×            |
-
----
-
-#### Matrix Storage and Memory Management
-
-- Continue using row-major order for all matrices, as in Assignment 1.
-- Use C-style arrays with manual memory management (`malloc` or `new`, `free` or `delete`).
-- Do not use STL containers or smart pointers.
-
----
-
-#### Input/Output and Validation
-
-- Use the same input/output format as Assignment 1:
-    - Input files: `data/<case>/input0.raw` (matrix \( A \)) and `input1.raw` (matrix \( B \)).
-    - Output file: `data/<case>/result.raw` (matrix \( C \)).
-    - Reference file: `data/<case>/output.raw` for validation.
-- The executable accepts a case number (0–9) as a command-line argument.
-- Validate correctness by comparing `result.raw` with `output.raw` for each implementation.
-
----
-
-### Build Instructions
-
-- Use the provided `CMakeLists.txt` to build the project.
-- **Additional Requirements**:
-    - Ensure OpenMP is enabled in your compiler (e.g., `-fopenmp` for GCC).
-    - The provided CMake file includes OpenMP support.
-- **Windows Users**:
-    - Use CLion or Visual Studio with CMake.
-    - Alternatively, use MinGW with `cmake -G "MinGW Makefiles"` and `make`.
-- **Linux/Mac Users**:
-    - Make sure gcc compiler is installed (`brew install gcc` on Mac).
-    - Configure cmake to use the correct compiler:
-      ```bash
-      cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ .
-      ```
-    - Run `cmake .` to generate a Makefile, then `make`.
-- **Testing OpenMP**:
-    - Set the number of threads using the environment variable `OMP_NUM_THREADS` (e.g., `export OMP_NUM_THREADS=4` on
-      Linux/Mac, or `set OMP_NUM_THREADS=4` on Windows).
-    - Test with different thread counts to find the best performance.
-
----
-
-### Submission Requirements
-
-#### Fork and Clone the Repository
-
-- Fork the Assignment 2 repository (provided separately).
-- Clone your fork:
-  ```bash
-  git clone https://github.com/parallelcomputingabo/Homework-2.git
-  cd Homework-2
-  ```
-
-#### Create a New Branch
+This whole table gets pretty long for each row since I'm testing with 5 different block sizes ( 8, 16, 32, 64, 128 ) and with 4 different numbers of threads ( 2, 4, 8, 16, my computer has an
+AMD Ryzen™ 7 5800H cpu which contains 8 CPU cores and 16 threads ).
+I had already hard-coded blocked calculation with different block sizes into the code, and then I test with different numbers of threads by executing with commands like:
 
 ```bash
-git checkout -b student-name
+export OMP_NUM_THREADS=2 && ./matmul 0
 ```
 
-#### Implement Your Solution
+Because for each test case I need to test out 4 different thread numbers by running 4 times, therefore I guess for the sake of simplicity in the following table the Naive time and all the blocked time would only be the last time I run the program with 16 threads...at least that was what I though....
 
-- Modify the provided `main.cpp` to implement `blocked_matmul` and `parallel_matmul`.
-- Update `README.md` with your performance results table.
+Then I found that every time I execute the program on the same test case all the execution time is different, which made my results make no sense at all, so I had to modify the `parallel_matmul` function to set the number of the threads, so that I only need to run the program once ( like `$./matmul 0` ) to get all the results of that specific test case.
 
-#### Commit and Push
+Then here's the results I got:
 
-```bash
-git add .
-git commit -m "student-name: Implemented optimized matrix multiplication"
-git push origin student-name
-```
-
-#### Submit a Pull Request (PR)
-
-- Create a pull request from your branch to the base repository’s `main` branch.
-- Include a description of your optimizations and any challenges faced.
-
----
-
-### Grading (100 Points Total)
-
-| Subtask                                     | Points |
-|---------------------------------------------|--------|
-| Correct implementation of `blocked_matmul`  | 30     |
-| Correct implementation of `parallel_matmul` | 30     |
-| Accurate performance measurements           | 20     |
-| Performance results table in README.md      | 10     |
-| Code clarity, commenting, and organization  | 10     |
-| **Total**                                   | 100    |
-
----
-
-### Tips for Success
-
-- **Cache Optimization**:
-    - Experiment with different block sizes. Start with powers of 2 (e.g., 16, 32, 64).
-    - Use a block size that balances cache usage without excessive overhead.
-- **OpenMP**:
-    - Test with different thread counts to find the optimal number for your system.
-    - Be cautious of false sharing (when threads access nearby memory locations, causing cache coherence issues).
-- **Performance Measurement**:
-    - Run multiple iterations for each test case and report the average time to reduce variability.
-    - Ensure no other heavy processes are running during measurements.
-- **Debugging**:
-    - Validate each implementation against `output.raw` to ensure correctness before optimizing.
-    - Use small test cases to debug your blocked and parallel implementations.
-
-Good luck, and enjoy optimizing your matrix multiplication!
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked (8) Time (s) | Blocked (16) Time (s) | Blocked (32) Time (s) | Blocked (64) Time (s) | Blocked (128) Time (s) | Parallel (2 threads) Time (s) | Parallel (4 threads) Time (s) | Parallel (8 threads) Time (s) | Parallel (16 threads) Time (s) | Blocked (8) Speedup | Blocked (16) Speedup | Blocked (32) Speedup | Blocked (64) Speedup | Blocked (128) Speedup | Parallel (2 threads) Speedup | Parallel (4 threads) Speedup | Parallel (8 threads) Speedup | Parallel (16 threads) Speedup |
+| --------- | ------------------------ | -------------- | -------------------- | --------------------- | --------------------- | --------------------- | ---------------------- | ----------------------------- | ----------------------------- | ----------------------------- | ------------------------------ | ------------------- | -------------------- | -------------------- | -------------------- | --------------------- | ---------------------------- | ---------------------------- | ---------------------------- | ----------------------------- |
+| 0         | 64x64x64                 | 0.000771646    | 0.0011353            | 0.00106613            | 0.00105391            | 0.00103871            | 0.00106295             | 0.000592247                   | 0.000543011                   | 0.00057743                    | 0.00416798                     | 0.679686x           | 0.723784x            | 0.732175x            | 0.742889x            | 0.725945x             | 1.30291x                     | 1.42105x                     | 1.33635x                     | 0.185137x                     |
+| 1         | 128x64x128               | 0.00322026     | 0.00494219           | 0.00457708            | 0.00430424            | 0.00435753            | 0.00459175             | 0.00200333                    | 0.00116642                    | 0.000974768                   | 0.0092046                      | 0.651586x           | 0.703564x            | 0.748161x            | 0.739012x            | 0.701315x             | 1.60745x                     | 2.7608x                      | 3.30362x                     | 0.349854x                     |
+| 2         | 100x128x56               | 0.00225026     | 0.00409613           | 0.00356572            | 0.00310022            | 0.00305437            | 0.00289241             | 0.00129529                    | 0.000868726                   | 0.00103449                    | 0.00266196                     | 0.549362x           | 0.631081x            | 0.725838x            | 0.736735x            | 0.777988x             | 1.73726x                     | 2.5903x                      | 2.17523x                     | 0.84534x                      |
+| 3         | 128x64x128               | 0.00315414     | 0.00575447           | 0.00438338            | 0.00434044            | 0.00437528            | 0.00468022             | 0.00194474                    | 0.00126332                    | 0.00110228                    | 0.00113642                     | 0.548121x           | 0.719569x            | 0.726689x            | 0.720901x            | 0.67393x              | 1.62189x                     | 2.49672x                     | 2.86148x                     | 2.77551x                      |
+| 4         | 32x128x32                | 0.000392086    | 0.000577388          | 0.000531521           | 0.000500874           | 0.000540766           | 0.000497433            | 0.000374269                   | 0.000424789                   | 0.00045401                    | 0.00626618                     | 0.679068x           | 0.737668x            | 0.782804x            | 0.725057x            | 0.788219x             | 1.0476x                      | 0.923014x                    | 0.863607x                    | 0.0625717x                    |
+| 5         | 200x100x256              | 0.0227305      | 0.0271641            | 0.022469              | 0.0221402             | 0.0217888             | 0.0221999              | 0.00907174                    | 0.00520066                    | 0.0027006                     | 0.00274182                     | 0.836786x           | 1.01164x             | 1.02666x             | 1.04322x             | 1.0239x               | 2.50564x                     | 4.3707x                      | 8.41686x                     | 8.2903x                       |
+| 6         | 256x256x256              | 0.0561899      | 0.0863531            | 0.12813               | 0.075368              | 0.0913475             | 0.0708557              | 0.0296018                     | 0.0172644                     | 0.0117392                     | 0.0082478                      | 0.6507x             | 0.43854x             | 0.745541x            | 0.615123x            | 0.79302x              | 1.89819x                     | 3.25466x                     | 4.78651x                     | 6.81272x                      |
+| 7         | 256x300x256              | 0.0676238      | 0.0972864            | 0.086496              | 0.0847436             | 0.086361              | 0.0843713              | 0.0357123                     | 0.0202628                     | 0.0106262                     | 0.00924776                     | 0.6951x             | 0.781813x            | 0.797981x            | 0.783036x            | 0.801502x             | 1.89357x                     | 3.33734x                     | 6.36388x                     | 7.31245x                      |
+| 8         | 64x128x64                | 0.0015731      | 0.00241749           | 0.00211694            | 0.00211896            | 0.00206529            | 0.00216167             | 0.00115807                    | 0.000696908                   | 0.000704469                   | 0.00521325                     | 0.650714x           | 0.743099x            | 0.742391x            | 0.761683x            | 0.727724x             | 1.35838x                     | 2.25725x                     | 2.23303x                     | 0.30175x                      |
+| 9         | 256x256x257              | 0.0643574      | 0.0973744            | 0.0811213             | 0.0711193             | 0.0748115             | 0.0716874              | 0.0283617                     | 0.0144551                     | 0.00879736                    | 0.00677648                     | 0.660928x           | 0.793348x            | 0.904922x            | 0.860262x            | 0.897751x             | 2.26916x                     | 4.45223x                     | 7.31554x                     | 9.49717x                      |
