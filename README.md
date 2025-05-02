@@ -236,3 +236,23 @@ git push origin student-name
     - Use small test cases to debug your blocked and parallel implementations.
 
 Good luck, and enjoy optimizing your matrix multiplication!
+
+
+### Results and Explanation
+
+According to the results, almost all cases Blocked matrix multiple performs slower compared to naive multiplication.This could be due to the blocked multiplication has more loops and logic which can be an overhead for smaller matrices. But this could perform well for larger matrices. However, out of the block sizes 64 byte cachelines resulted a better performance compared to other cacheline sizes.
+
+Parallelizing with OpenMP performs the best as expected. Here, results were tested with different number of threads (2, 4, 8) and 8 threads performed the best.
+
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 × 64 × 64        |   0.00286956       |  0.0039845           |    0.0039845          | 0.72×           | 2.89×            |
+| 1 | 128 x 64 x 128 | 0.00819703 | 0.0107341 | 0.00161662 | 0.76x | 5.07x |
+| 2 | 100 x 128 x 56 | 0.00591884 | 0.00705264 | 0.00257082 | 0.84x | 2.30x |
+| 3 | 128 x 64 x 128 | 0.00855164 | 0.0104604 | 0.00158808 | 0.82x | 5.38x |
+| 4 | 32 x 128 x 32 | 0.00101901 | 0.00142778 | 0.000622604 | 0.71x | 1.64x |
+| 5 | 200 x 100 x 256 |  0.030972 | 0.0239394 |  0.00744395 | 1.29x | 4.16x |
+| 6 | 256 x 256 x 256 |  0.0574685 | 0.0826263 |  0.0242001 | 0.70x | 2.37x |
+| 7 | 256 x 300 x 256 |  0.0637025 | 0.0922899 |  0.0178825 | 0.69x | 3.56x |
+| 8 | 64 x 128 x 64 |  0.00378908 | 0.00581044 |  0.001216 | 0.65x | 3.12x |
+| 9 | 256 x 256 x 257 |  0.0591941 | 0.0762655 |  0.0228895 | 0.78x | 2.59x |

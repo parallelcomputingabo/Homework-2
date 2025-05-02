@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/kaveesha/Desktop/Uthpala_Abo/Parallel Programming/Homework-2/main.cpp
+iostream
+-
+fstream
+-
+string
+-
+omp.h
+-
+cmath
+-
+
