@@ -163,7 +163,6 @@ int main(int argc, char *argv[]) {
 
     // Validate naive result
     bool naive_correct = validate_result(result_file, reference_file);
-    //std::cout << "naive_correct " << naive_correct << std::endl;
     if (!naive_correct) {
         std::cerr << "Naive result validation failed for case " << case_number << std::endl;
     }
@@ -173,12 +172,12 @@ int main(int argc, char *argv[]) {
     start_time = omp_get_wtime();
     blocked_matmul(C_blocked, A, B, m, n, p, 64);
     double blocked_time = omp_get_wtime() - start_time;
+    
     // TODO Write blocked result to file
     write_matrix(result_file, C_blocked, m, p);
 
     // Validate blocked result
     bool blocked_correct = validate_result(result_file, reference_file);
-    std::cout << "blocked_correct " << blocked_correct << std::endl;
     if (!blocked_correct) {
         std::cerr << "Blocked result validation failed for case " << case_number << std::endl;
     }
