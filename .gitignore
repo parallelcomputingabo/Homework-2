@@ -1,0 +1,5 @@
+.vscode/
+result.raw
+matmul
+matmul_p
+performance.md
