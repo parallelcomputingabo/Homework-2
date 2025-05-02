@@ -1,0 +1,3 @@
+/home/ray/parallelprogramming2025/Homework-2/CMakeFiles/matmul.dir
+/home/ray/parallelprogramming2025/Homework-2/CMakeFiles/edit_cache.dir
+/home/ray/parallelprogramming2025/Homework-2/CMakeFiles/rebuild_cache.dir
