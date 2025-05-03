@@ -155,6 +155,19 @@ int main(int argc, char *argv[]) {
     double *C_blocked = new double[m * p];
     double *C_parallel = new double[m * p];
 
+    if (n_A != n_B) {
+        std::cerr << "Error: Matrix dimensions do not match for multiplication." << std::endl;
+        delete[] A;
+        delete[] B;
+        delete[] C_naive;
+        delete[] C_blocked;
+        delete[] C_parallel;
+        delete[] D;
+        return EXIT_FAILURE;
+    } else {
+        n = n_A;
+    }
+
     // Measure performance of naive_matmul
     double start_time = omp_get_wtime();
     naive_matmul(C_naive, A, B, m, n, p);
@@ -172,7 +185,7 @@ int main(int argc, char *argv[]) {
 
     // Measure performance of blocked_matmul (use block_size = 32 as default)
     start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 32);
+    blocked_matmul(C_blocked, A, B, m, n, p, 64);
     double blocked_time = omp_get_wtime() - start_time;
 
     // TODO Write blocked result to file
