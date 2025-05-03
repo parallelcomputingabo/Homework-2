@@ -61,55 +61,84 @@ void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint3
 {
     // TODO: Implement parallel matrix multiplication using OpenMP
     // A is m x n, B is n x p, C is m x p
+     // Initialize C to 0 to avoid undefined behavior
+     #pragma omp parallel for
+     for (uint32_t i = 0; i < m; i++) {
+         for (uint32_t j = 0; j < p; j++) {
+             C[i * p + j] = 0.0f;
+         }
+     }
+ 
+     // Perform parallel matrix multiplication
+     #pragma omp parallel for
+     for (uint32_t i = 0; i < m; i++) {
+         for (uint32_t j = 0; j < p; j++) {
+             for (uint32_t k = 0; k < n; k++) {
+                 C[i * p + j] += A[i * n + k] * B[k * p + j];
+             }
+         }
+     }
 }
 
-bool validate_result(const std::string &result_file, const std::string &reference_file)
+bool write_matrix_to_file(const std::string& filename, float* matrix, int m, int p)
 {
-    // TODO : Implement result validation
-    //  Read result and reference files
-    ifstream result(result_file);
-    ifstream reference(reference_file);
-
-    if (!result.is_open() || !reference.is_open())
+    std::ofstream outFile(filename);
+    if (!outFile.is_open())
     {
-        std::cerr << "Error opening result or reference file!" << std::endl;
+        std::cerr << "Error opening result file: " << filename << std::endl;
         return false;
     }
 
-    // Read dimensions
-    int m, n;
-    result >> m >> n;
-    int ref_m, ref_n;
-    reference >> ref_m >> ref_n;
-
-    if (m != ref_m || n != ref_n)
-    {
-        std::cerr << "Dimension mismatch!" << std::endl;
-        return false;
-    }
-
-    // Compare matrices
+    outFile << m << " " << p << "\n";
     for (int i = 0; i < m; ++i)
     {
-        for (int j = 0; j < n; ++j)
+        for (int j = 0; j < p; ++j)
         {
-            float res_val, ref_val;
-            result >> res_val;
-            reference >> ref_val;
+            outFile << matrix[i * p + j];
+            if (j < p - 1)
+                outFile << " ";
+        }
+        outFile << "\n";
+    }
 
-            if (std::abs(res_val - ref_val) > 1e-5)
-            {
-                std::cerr << "Mismatch at (" << i << ", " << j << "): "
-                          << res_val << " != " << ref_val << std::endl;
-                return false;
-            }
+    outFile.close();
+    return true;
+}
+
+bool validate_result(const std::string& result_file, const std::string& reference_file) {
+    ifstream res(result_file);
+    ifstream exp(reference_file);
+    
+    if (!res.is_open() || !exp.is_open()) {
+        cout << "Error opening validation files!" << std::endl;
+        return false;
+    }
+
+    int result_row, result_col, exp_row, exp_col;
+    res >> result_row >> result_col;
+    exp >> exp_row >> exp_col;
+
+    if (result_row != exp_row || result_col != exp_col) {
+        cout << "Dimension mismatch in validation!" << std::endl;
+        return false;
+    }
+
+    float res_value, exp_value;
+    bool valid = true;
+
+    for (int i = 0; i < result_row * result_col; ++i) {
+        res >> res_value;
+        exp >> exp_value;
+        if (res_value != exp_value) {
+            cout << "Mismatch at element " << i << ": " 
+                      << res_value << " vs " << exp_value << std::endl;
+            valid = false;
         }
     }
 
-    // Close files
-    result.close();
-    reference.close();
-    return true;
+    res.close();
+    exp.close();
+    return valid;
 }
 
 int main(int argc, char *argv[])
@@ -133,8 +162,9 @@ int main(int argc, char *argv[])
     std::string input1_file = folder + "input1.raw";
     std::string result_file = folder + "result.raw";
     std::string reference_file = folder + "output.raw";
-    std::string result_block_file = folder + "result_block.raw";
-
+    std::string result_block_file = folder + "result_block.raw"; //output for blocked matrix multiplication
+    std::string result_omp_file = folder + "result_omp.raw"; //output for parrllel matrix multiplication
+    
     int m, n, p; // A is m x n, B is n x p, C is m x p
 
     // TODO Read input0.raw (matrix A)
@@ -143,7 +173,7 @@ int main(int argc, char *argv[])
     // TODO Read input1.raw (matrix B)
     ifstream fileB(input1_file);
     fileB >> n >> p;
-
+    cout << "Matrix Dimensions: " << m << " x " << n << " x " << p << endl;
     // Allocate memory for result matrices
     float *A = new float[m * n];
     float *B = new float[n * p];
@@ -152,10 +182,8 @@ int main(int argc, char *argv[])
     float *C_parallel = new float[m * p];
 
     // Read matrix in row-major order
-    for (int i = 0; i < m * n; ++i)
-        fileA >> A[i];
-    for (int i = 0; i < n * p; ++i)
-        fileB >> B[i];
+    for (int i = 0; i < m * n; ++i) fileA >> A[i];
+    for (int i = 0; i < n * p; ++i) fileB >> B[i];
 
     // Close input files
     fileA.close();
@@ -167,28 +195,9 @@ int main(int argc, char *argv[])
     double naive_time = omp_get_wtime() - start_time;
 
     // TODO Write naive result to file
-    ofstream outFile(result_file);
-    if (!outFile.is_open())
-    {
-        cout << "Error opening result file!" << std::endl;
-        delete[] A;
-        delete[] B;
-        delete[] C_naive;
+    if (!write_matrix_to_file(result_file, C_naive, m, p)) {
         return 1;
     }
-
-    outFile << m << " " << p << "\n";
-    for (int i = 0; i < m; ++i)
-    {
-        for (int j = 0; j < p; ++j)
-        {
-            outFile << C_naive[i * p + j];
-            if (j < p - 1)
-                outFile << " ";
-        }
-        outFile << "\n";
-    }
-    outFile.close();
 
     // Validate naive result
     bool naive_correct = validate_result(result_file, reference_file);
@@ -212,29 +221,11 @@ int main(int argc, char *argv[])
     
     std::cout << "32 Blocked time : " << blocked_time << " seconds\n";
     std::cout << "Blocked speedup: " << (naive_time / blocked_time) << "x\n";
+    
     // TODO Write blocked result to file
-    outFile.open(result_block_file);
-    if (!outFile.is_open())
-    {
-        cout << "Error opening result file!" << std::endl;
-        delete[] A;
-        delete[] B;
-        delete[] C_blocked;
+    if (!write_matrix_to_file(result_block_file, C_blocked, m, p)) {
         return 1;
     }
-
-    outFile << m << " " << p << "\n";
-    for (int i = 0; i < m; ++i)
-    {
-        for (int j = 0; j < p; ++j)
-        {
-            outFile << C_blocked[i * p + j];
-            if (j < p - 1)
-                outFile << " ";
-        }
-        outFile << "\n";
-    }
-    outFile.close();
     // Validate blocked result
     bool blocked_correct = validate_result(result_block_file, reference_file);
     if (!blocked_correct)
@@ -248,13 +239,15 @@ int main(int argc, char *argv[])
     double parallel_time = omp_get_wtime() - start_time;
 
     // TODO Write parallel result to file
-
+    if (!write_matrix_to_file(result_omp_file, C_parallel, m, p)) {
+        return 1;
+    }
     // Validate parallel result
-    // bool parallel_correct = validate_result(result_file, reference_file);
-    // if (!parallel_correct)
-    // {
-    //     std::cerr << "Parallel result validation failed for case " << case_number << std::endl;
-    // }
+    bool parallel_correct = validate_result(result_omp_file, reference_file);
+    if (!parallel_correct)
+    {
+        std::cerr << "Parallel result validation failed for case " << case_number << std::endl;
+    }
 
     // Print performance results
     std::cout << "Case " << case_number << " (" << m << "x" << n << "x" << p << "):\n";
