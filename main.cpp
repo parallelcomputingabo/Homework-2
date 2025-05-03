@@ -5,7 +5,7 @@
 #include <cmath>
 #include <cstdint>
 
-// naive matrix multiplication
+// Naive matrix multiplication
 void naive_matmul(double *C, double *A, double *B, uint32_t m, uint32_t n, uint32_t p) {
     // Initialize the result matrix C to zero
     for (uint32_t i = 0; i < m * p; ++i) {
@@ -22,15 +22,50 @@ void naive_matmul(double *C, double *A, double *B, uint32_t m, uint32_t n, uint3
     }
 }
 
+// Blocked matrix multiplication for cache optimization
 void blocked_matmul(double *C, double *A, double *B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size) {
-    // TODO: Implement blocked matrix multiplication
-    // A is m x n, B is n x p, C is m x p
-    // Use block_size to divide matrices into submatrices
+    // Initialize the result matrix C to zero
+    for (uint32_t i = 0; i < m * p; ++i) {
+        C[i] = 0.0f;
+    }
+    
+    // Blocked matrix multiplication
+    for (uint32_t ii = 0; ii < m; ii += block_size) {
+        for (uint32_t jj = 0; jj < p; jj += block_size) {
+            for (uint32_t kk = 0; kk < n; kk += block_size) {
+                // Process block: C[ii:ii+block_size, jj:jj+block_size] += A[ii:ii+block_size, kk:kk+block_size] * B[kk:kk+block_size, jj:jj+block_size]
+                for (uint32_t i = ii; i < ii + block_size && i < m; ++i) {
+                    for (uint32_t j = jj; j < jj + block_size && j < p; ++j) {
+                        double sum = C[i * p + j];
+                        for (uint32_t k = kk; k < kk + block_size && k < n; ++k) {
+                            sum += A[i * n + k] * B[k * p + j];
+                        }
+                        C[i * p + j] = sum;
+                    }
+                }
+            }
+        }
+    }
 }
 
+// Parallel matrix multiplication using OpenMP
 void parallel_matmul(double *C, double *A, double *B, uint32_t m, uint32_t n, uint32_t p) {
-    // TODO: Implement parallel matrix multiplication using OpenMP
-    // A is m x n, B is n x p, C is m x p
+    // Initialize the result matrix C to zero
+    for (uint32_t i = 0; i < m * p; ++i) {
+        C[i] = 0.0f;
+    }
+    
+    // Perform the matrix multiplication in parallel
+    #pragma omp parallel for
+    for (uint32_t i = 0; i < m; ++i) {
+        for (uint32_t j = 0; j < p; ++j) {
+            double sum = 0.0;
+            for (uint32_t k = 0; k < n; ++k) {
+                sum += A[i * n + k] * B[k * p + j];
+            }
+            C[i * p + j] = sum;
+        }
+    }
 }
 
 // Result validation
