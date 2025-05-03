@@ -269,3 +269,4 @@ Average parallel speedup by thread number:
 - 8:  3.5422x (Best)
 - 16: 2.2268x
 
+Table shows results for Best performing parameters (64 block size ad 8 threads)
