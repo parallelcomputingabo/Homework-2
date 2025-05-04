@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
     // TODO Read input1.raw (matrix B)
     ifstream fileB(input1_file);
     fileB >> n >> p;
-    cout << "Matrix Dimensions: " << m << " x " << n << " x " << p << endl;
+
     // Allocate memory for result matrices
     float *A = new float[m * n];
     float *B = new float[n * p];
@@ -210,18 +210,9 @@ int main(int argc, char *argv[])
    
 
     start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 64);
+    blocked_matmul(C_blocked, A, B, m, n, p, 32);  
     double blocked_time = omp_get_wtime() - start_time;
    
-    std::cout << "64 Blocked time : " << blocked_time << " seconds\n";
-    std::cout << "Blocked speedup: " << (naive_time / blocked_time) << "x\n";
-    start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 32);
-    blocked_time = omp_get_wtime() - start_time;
-    
-    std::cout << "32 Blocked time : " << blocked_time << " seconds\n";
-    std::cout << "Blocked speedup: " << (naive_time / blocked_time) << "x\n";
-    
     // TODO Write blocked result to file
     if (!write_matrix_to_file(result_block_file, C_blocked, m, p)) {
         return 1;
@@ -232,6 +223,7 @@ int main(int argc, char *argv[])
     {
         std::cerr << "Blocked result validation failed for case " << case_number << std::endl;
     }
+
 
     // Measure performance of parallel_matmul
     start_time = omp_get_wtime();
