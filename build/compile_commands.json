@@ -1,0 +1,8 @@
+[
+{
+  "directory": "D:/Abo/Parallel_Programming/Homework-2/build",
+  "command": "C:\\PROGRA~2\\mingw64\\bin\\G__~1.EXE    -fopenmp -g -std=gnu++11 -fopenmp -o CMakeFiles\\MatrixMultiplication.dir\\main.cpp.obj -c D:\\Abo\\Parallel_Programming\\Homework-2\\main.cpp",
+  "file": "D:/Abo/Parallel_Programming/Homework-2/main.cpp",
+  "output": "CMakeFiles/MatrixMultiplication.dir/main.cpp.obj"
+}
+]
