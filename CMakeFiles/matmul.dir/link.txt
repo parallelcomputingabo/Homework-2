@@ -1,0 +1,1 @@
+/usr/bin/g++  -fopenmp -Wl,--dependency-file=CMakeFiles/matmul.dir/link.d CMakeFiles/matmul.dir/main.cpp.o -o matmul  /usr/lib/libgomp.so /usr/lib/libpthread.a
