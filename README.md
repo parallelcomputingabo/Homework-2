@@ -12,227 +12,159 @@
 
 ---
 
-### Assignment Overview
-
-Welcome to the second homework assignment of the Parallel Programming course! In Assignment 1, you implemented a naive
-matrix multiplication using a triple nested loop. In this assignment, you will optimize the performance of your naive
-implementation using two techniques:
-
-1. **Cache Optimization via Blocked Matrix Multiplication**: Improve data locality to reduce cache misses.
-2. **Parallel Matrix Multiplication using `OpenMP`**: Parallelize the computation across multiple threads.
-
-Your task is to implement both optimizations in the provided C++ `main.cpp` file, measure their performance, and compare the
-wall clock time of the naive, cache-optimized, and parallel implementations for each test case. This assignment builds
-on your Assignment 1 code, so ensure your naive implementation is correct before starting.
-
----
-
-### Technical Requirements
-
-#### 1. Cache Optimization (Blocked Matrix Multiplication)
-
-**Why Cache Optimization?**
-
-Modern CPUs rely on cache memory to reduce the latency of accessing data from main memory. Cache memory is faster but
-smaller, organized in cache lines (typically 64 bytes). When a CPU accesses a memory location, it fetches an entire
-cache line. Matrix multiplication can suffer from poor performance if memory accesses are not cache-friendly, leading to
-frequent cache misses.
-
-The naive matrix multiplication (with triple nested loops) accesses memory in a way that may not exploit spatial and
-temporal locality:
-
-- **Spatial Locality**: Accessing consecutive memory locations (e.g., elements in the same cache line).
-- **Temporal Locality**: Reusing the same data multiple times while it’s still in the cache.
-
-Blocked matrix multiplication divides the matrices into smaller submatrices (blocks) that fit into the cache. By
-performing computations on these blocks, you ensure that data is reused while it resides in the cache, reducing cache
-misses and improving performance.
-
-**Blocked Matrix Multiplication Pseudocode**
-
-Assume matrices \( A \) (m × n), \( B \) (n × p), and \( C \) (m × p) are stored in row-major order. The blocked matrix
-multiplication processes submatrices of size \( block_size × block_size \):
-
-```cpp
-// C = A * B
-for (ii = 0; ii < m; ii += block_size)
-    for (jj = 0; jj < p; jj += block_size)
-        for (kk = 0; kk < n; kk += block_size)
-            // Process block: C[ii:ii+block_size, jj:jj+block_size] += A[ii:ii+block_size, kk:kk+block_size] * B[kk:kk+block_size, jj:jj+block_size]
-            for (i = ii; i < min(ii + block_size, m); i++)
-                for (j = jj; j < min(jj + block_size, p); j++)
-                    for (k = kk; k < min(kk + block_size, n); k++)
-                        C[i * p + j] += A[i * n + k] * B[k * p + j]
-```
-
-- **block_size**: Chosen to ensure the block fits in the cache (e.g., 32, 64, or 128, depending on the system).
-- **Outer loops (ii, jj, kk)**: Iterate over blocks.
-- **Inner loops (i, j, k)**: Compute within a block, reusing data in the cache.
+### 1. Blocked Matrix Multiplication Pseudocode
 
 **Task**: Implement the `blocked_matmul` function in the provided `main.cpp`. Experiment with different block sizes (e.g.,
 16, 32, 64) and report the best performance.
 
+- Best block size performance varied, but block size 32 performed better than 16 and 64 because 32 showed better consistency than 16 and 64. 
+- Small matrices (ex: 64x64x64) showed minimal improvement due to overhead.
+
 ---
 
-#### 2. Parallel Matrix Multiplication with OpenMP
-
-**Why OpenMP?**
-
-`OpenMP` is a portable API for parallel programming in shared-memory systems. It allows you to parallelize loops with
-minimal code changes, distributing iterations across multiple threads. In matrix multiplication, the outer loop(s) can
-be parallelized, as each element of the output matrix \( C \) can be computed independently.
-
-**Parallelizing with OpenMP**
-
-Use OpenMP to parallelize the outer loop(s) of the naive matrix multiplication. For example, parallelize the loop over
-rows of \( C \):
-
-```cpp
-#pragma omp parallel for
-for (i = 0; i < m; i++)
-    for (j = 0; j < p; j++)
-        for (k = 0; k < n; k++)
-            C[i * p + j] += A[i * n + k] * B[k * p + j];
-```
-
-- The `#pragma omp parallel for` directive tells `OpenMP` to distribute iterations of the loop across available threads.
-- Ensure thread safety: Since each iteration writes to a distinct element of \( C \), this loop is safe to parallelize
-  without locks.
-- Use `omp_get_wtime()` to measure wall clock time for accurate performance comparisons.
+### 2. Parallel Matrix Multiplication with OpenMP
 
 **Task**: Implement the `parallel_matmul` function in the provided `main.cpp` using `OpenMP`. Test with different numbers of
 threads (e.g., 2, 4, 8) by setting the environment variable `OMP_NUM_THREADS`.
 
+- The performance result is in section 3 (Performance Measurement) with 3 different threads (2, 4, and 8).
+- Parallel implementation achieved 3-6× speedup over naive implementation for larger matrices.
+- Smaller matrices sometimes showed less benefit or even slowdown due to parallel overhead
+
 ---
 
-#### 3. Performance Measurement
+### 3. Performance Measurement
 
-For each test case (0 through 9 in the `data` folder):
-
-- Measure the **wall clock time** for:
-    - Naive matrix multiplication (`naive_matmul`).
-    - Cache-optimized matrix multiplication (`blocked_matmul`).
-    - Parallel matrix multiplication (`parallel_matmul`).
-- Use `omp_get_wtime()` for timing, as it provides high-resolution wall clock time.
-- Report the times in a table in your submission README.md, including:
-    - Test case number.
-    - Matrix dimensions (m × n × p).
-    - Wall clock time for each implementation (in seconds).
-    - Speedup of blocked and parallel implementations over the naive implementation.
-
-Example table format:
+#### Block size = 16, OMP_NUM_THREADS = 2
 
 | Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
 |-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
-| 0         | 512 × 512 × 512        | 2.345          | 0.987            | 0.543             | 2.38×           | 4.32×            |
+| 0         | 64 x 64 x 64           | 0              | 0.000999928      | 0.000999928       | 0×              | 0×               |
+| 1         | 128 x 64 x 128         | 0.00299978     | 0.00200009       | 0.00199986        | 1.49982x        | 1.5x             |
+| 2         | 100 x 128 x 56         | 0.000999928    | 0.00200009       | 0.00200009        | 0.49994x        | 0.49994x         |
+| 3         | 128 x 64 x 128         | 0.00200009     | 0.00199986       | 0.000999928       | NaN             | 0x               |
+| 4         | 32 x 128 x 32          | 0              | 0                | 0.543             | 2.38×           | 4.32×            |
+| 5         | 200 x 100 x 256        | 0.0119998      | 0.016            | 0.00399995        | 0.749989x       | 3×               |
+| 6         | 256 x 256 x 256        | 0.0370002      | 0.05             | 0.00699997        | 0.740004x       | 5.28576x         |
+| 7         | 256 x 300 x 256        | 0.0450001      | 0.059            | 0.00999999        | 0.762713x       | 4.50001x         |
+| 8         | 64 x 128 x 64          | 0.00199986     | 0.00100017       | 0.00199986        | 1.99952x        | 1x               |
+| 9         | 256 x 256 x 257        | 0.036          | 0.049            | 0.00700021        | 0.734694x       | 5.14271x         |
 
----
+#### Block size = 16, OMP_NUM_THREADS = 4
 
-#### Matrix Storage and Memory Management
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 x 64 x 64           | 0.000999928    | 0.000999928      | 0.000999928       | 1×              | 1×               |
+| 1         | 128 x 64 x 128         | 0.00399995     | 0.00300002       | 0.00099992        | 1.33331x        | 4.00024x         |
+| 2         | 100 x 128 x 56         | 0.00199986     | 0.00199986       | 0.00200009        | 1x              | 0.999881x        |
+| 3         | 128 x 64 x 128         | 0.00200009     | 0.00300002       | 0.000999928       | 0.666693x       | 2.00024x         |
+| 4         | 32 x 128 x 32          | 0              | 0.000999928      | 0.000999928       | 0×              | 0x               |
+| 5         | 200 x 100 x 256        | 0.0149999      | 0.016            | 0.00399995        | 0.93749x        | 3.75001x         |
+| 6         | 256 x 256 x 256        | 0.0370002      | 0.05             | 0.00699997        | 0.740004x       | 5.28576x         |
+| 7         | 256 x 300 x 256        | 0.0440001      | 0.0599999        | 0.0100002         | 0.733337x       | 4.39991x         |
+| 8         | 64 x 128 x 64          | 0.00100017     | 0.00300002       | 0.00199986        | 0.333386x       | 0.500119x        |
+| 9         | 256 x 256 x 257        | 0.036          | 0.053            | 0.00900006        | 0.679246x       | 3.99997x        |
 
-- Continue using row-major order for all matrices, as in Assignment 1.
-- Use C-style arrays with manual memory management (`malloc` or `new`, `free` or `delete`).
-- Do not use STL containers or smart pointers.
+#### Block size = 16, OMP_NUM_THREADS = 8
 
----
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 x 64 x 64           | 0.000999928    | 0.000999928      | 0.00200009        | 1×              | 0.49994x         |
+| 1         | 128 x 64 x 128         | 0.00199986     | 0.00300002       | 0.00100017        | 0.666614x       | 1.99952x         |
+| 2         | 100 x 128 x 56         | 0.00200009     | 0.00200009       | 0.00199986        | 1x              | 1.00012x         |
+| 3         | 128 x 64 x 128         | 0.00300002     | 0.00300002       | 0.000999928       | 1x              | 3.00024x         |
+| 4         | 32 x 128 x 32          | 0              | 0                | 0.000999928       | NaN             | 0x               |
+| 5         | 200 x 100 x 256        | 0.0120001      | 0.026            | 0.00300002        | 0.461541x       | 4x               |
+| 6         | 256 x 256 x 256        | 0.0380001      | 0.05             | 0.0079999         | 0.760003x       | 4.75007x         |
+| 7         | 256 x 300 x 256        | 0.0450001      | 0.0609999        | 0.00900006        | 0.737708x       | 4.99997x         |
+| 8         | 64 x 128 x 64          | 0.000999928    | 0.00200009       | 0.00300002        | 0.49994x        | 0.333307x        |
+| 9         | 256 x 256 x 257        | 0.0349998      | 0.0519998        | 0.00699997        | 0.673076x       | 5x               |
 
-#### Input/Output and Validation
+#### Block size = 32, OMP_NUM_THREADS = 2
 
-- Use the same input/output format as Assignment 1:
-    - Input files: `data/<case>/input0.raw` (matrix \( A \)) and `input1.raw` (matrix \( B \)).
-    - Output file: `data/<case>/result.raw` (matrix \( C \)).
-    - Reference file: `data/<case>/output.raw` for validation.
-- The executable accepts a case number (0–9) as a command-line argument.
-- Validate correctness by comparing `result.raw` with `output.raw` for each implementation.
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 x 64 x 64           | 0.00100017     | 0.00100017       | 0.00200009        | 1x              | 0.50006x         |
+| 1         | 128 x 64 x 128         | 0.00200009     | 0.00199986       | 0.00199986        | 1.00012x        | 1.00012x         |
+| 2         | 100 x 128 x 56         | 0.00199986     | 0.00100017       | 0.00100017        | 1.99952x        | 1.99952x         |
+| 3         | 128 x 64 x 128         | 0.00300002     | 0.00300002       | 0.00100017        | 1x              | 2.99952x         |
+| 4         | 32 x 128 x 32          | 0              | 0                | 0.00200009        | NaN             | 0x               |
+| 5         | 200 x 100 x 256        | 0.0109999      | 0.0149999        | 0.00199986        | 0.733334x       | 5.50036x         |
+| 6         | 256 x 256 x 256        | 0.0380001      | 0.04             | 0.00600004        | 0.950004x       | 6.33331x         |
+| 7         | 256 x 300 x 256        | 0.0470002      | 0.0500002        | 0.00900006        | 0.94x           | 5.2222x          |
+| 8         | 64 x 128 x 64          | 0.00100017     | 0.000999928      | 0.00299978        | 1.00024x        | 0.333413x        |
+| 9         | 256 x 256 x 257        | 0.0350001      | 0.0410001        | 0.00699997        | 0.853658x       | 5.00003x         |
 
----
+#### Block size = 32, OMP_NUM_THREADS = 4
 
-### Build Instructions
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 x 64 x 64           | 0              | 0.000999928      | 0.000999928       | 0×              | 0×               |
+| 1         | 128 x 64 x 128         | 0.00300002     | 0.00199986       | 0.00300002        | 1.50012x        | 1x               |
+| 2         | 100 x 128 x 56         | 0.00199986     | 0.00100017       | 0.00199986        | 1.99952x        | 1x               |
+| 3         | 128 x 64 x 128         | 0.00300002     | 0.00300002       | 0.00300002        | 1x              | 1x               |
+| 4         | 32 x 128 x 32          | 0              | 0                | 0.00199986        | NaN             | 0x               |
+| 5         | 200 x 100 x 256        | 0.0120001      | 0.013            | 0.00299978        | 0.923083x       | 4.00032x         |
+| 6         | 256 x 256 x 256        | 0.0379999      | 0.0420001        | 0.00800014        | 0.904758x       | 4.7499x          |
+| 7         | 256 x 300 x 256        | 0.043          | 0.0479999        | 0.00800014        | 0.895836x       | 5.37491x         |
+| 8         | 64 x 128 x 64          | 0.00100017     | 0.000999928      | 0.00300002        | 0.999762x       | 0.333307x        |
+| 9         | 256 x 256 x 257        | 0.0369999      | 0.046            | 0.0079999         | 0.804346x       | 4.62505x         |
 
-- Use the provided `CMakeLists.txt` to build the project.
-- **Additional Requirements**:
-    - Ensure OpenMP is enabled in your compiler (e.g., `-fopenmp` for GCC).
-    - The provided CMake file includes OpenMP support.
-- **Windows Users**:
-    - Use CLion or Visual Studio with CMake.
-    - Alternatively, use MinGW with `cmake -G "MinGW Makefiles"` and `make`.
-- **Linux/Mac Users**:
-    - Make sure gcc compiler is installed (`brew install gcc` on Mac).
-    - Configure cmake to use the correct compiler:
-      ```bash
-      cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ .
-      ```
-    - Run `cmake .` to generate a Makefile, then `make`.
-- **Testing OpenMP**:
-    - Set the number of threads using the environment variable `OMP_NUM_THREADS` (e.g., `export OMP_NUM_THREADS=4` on
-      Linux/Mac, or `set OMP_NUM_THREADS=4` on Windows).
-    - Test with different thread counts to find the best performance.
+#### Block size = 32, OMP_NUM_THREADS = 8
 
----
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 x 64 x 64           | 0.000999928    | 0.000999928      | 0.00200009        | 1x              | 0.49994x         |
+| 1         | 128 x 64 x 128         | 0.00200009     | 0.00200009       | 0.00200009        | 1x              | 1x               |
+| 2         | 100 x 128 x 56         | 0.00199986     | 0.000999928      | 0.00399995        | 2x              | 0.49997x         |
+| 3         | 128 x 64 x 128         | 0.00200009     | 0.00300002       | 0.00300002        | 0.666693x       | 0.666693x        |
+| 4         | 32 x 128 x 32          | 0              | 0                | 0.00100017        | NaN             | 0x               |
+| 5         | 200 x 100 x 256        | 0.0120001      | 0.0129998        | 0.00400019        | 0.923099x       | 2.99988x         |
+| 6         | 256 x 256 x 256        | 0.0380001      | 0.0420001        | 0.00900006        | 0.904763x       | 4.2222x          |
+| 8         | 64 x 128 x 64          | 0.000999928    | 0.00100017       | 0.00300002        | 0.999762x       | 0.333307x        |
+| 9         | 256 x 256 x 257        | 0.0370002      | 0.0440001        | 0.00699997        | 0.84091x        | 5.28576x         |
 
-### Submission Requirements
+#### Block size = 64, OMP_NUM_THREADS = 2
 
-#### Fork and Clone the Repository
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 x 64 x 64           | 0.00100017     | 0.000999928      | 0.000999928       | 1.00024x        | 1.00024x         |
+| 1         | 128 x 64 x 128         | 0.00200009     | 0.00299978       | 0.00199986        | 0.666746x       | 1.00012x         |
+| 2         | 100 x 128 x 56         | 0.000999928    | 0.00199986       | 0.00199986        | 0.5x            | 0.5x             |
+| 3         | 128 x 64 x 128         | 0.00199986     | 0                | 0                 | inf             | inf              |
+| 4         | 32 x 128 x 32          | 0              | 0                | 0.00100017        | NaN             | 0x               |
+| 5         | 200 x 100 x 256        | 0.0150001      | 0                | 0.013             | inf             | 1.15385x         |
+| 6         | 256 x 256 x 256        | 0.0479999      | 0.0469999        | 0                 | 1.02128x        | inf              |
+| 7         | 256 x 300 x 256        | 0.033          | 0.046            | 0                 | 0.717391x       | inf              |
+| 8         | 64 x 128 x 64          | 0              | 0.000999928      | 0.016             | 0×              | 0×               |
+| 9         | 256 x 256 x 257        | 0.0309999      | 0.0320001        | 0.0139999         | 0.968745x       | 2.21429x         |
 
-- Fork the Assignment 2 repository (provided separately).
-- Clone your fork:
-  ```bash
-  git clone https://github.com/parallelcomputingabo/Homework-2.git
-  cd Homework-2
-  ```
+#### Block size = 64, OMP_NUM_THREADS = 4
 
-#### Create a New Branch
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 x 64 x 64           | 0.0150001      | 0.000999928      | 0                 | 15.0012x        | infx             |
+| 1         | 128 x 64 x 128         | 0.00200009     | 0.0149999        | 0.00499988        | 0.133341x       | 0.400029x        |
+| 2         | 100 x 128 x 56         | 0              | 0.000999928      | 0                 | 0×              | NaNx             |
+| 3         | 128 x 64 x 128         | 0.00900006     | 0                | 0                 | infx            | infx             |
+| 4         | 32 x 128 x 32          | 0              | 0                | 0                 | NaN             | NaN              |
+| 5         | 200 x 100 x 256        | 0.016          | 0.0150001        | 0                 | 1.06666x        | infx             |
+| 6         | 256 x 256 x 256        | 0.0480001      | 0.043            | 0                 | 1.11628x        | infx             |
+| 7         | 256 x 300 x 256        | 0.046          | 0.0479999        | 0.0190001         | 0.958336x       | 2.42105x         |
+| 8         | 64 x 128 x 64          | 0.00200009     | 0.000999928      | 0                 | 2.00024x        | infx             |
+| 9         | 256 x 256 x 257        | 0.0310001      | 0.0319998        | 0                 | 0.96876x        | infx             |
 
-```bash
-git checkout -b student-name
-```
+#### Block size = 64, OMP_NUM_THREADS = 8
 
-#### Implement Your Solution
-
-- Modify the provided `main.cpp` to implement `blocked_matmul` and `parallel_matmul`.
-- Update `README.md` with your performance results table.
-
-#### Commit and Push
-
-```bash
-git add .
-git commit -m "student-name: Implemented optimized matrix multiplication"
-git push origin student-name
-```
-
-#### Submit a Pull Request (PR)
-
-- Create a pull request from your branch to the base repository’s `main` branch.
-- Include a description of your optimizations and any challenges faced.
-
----
-
-### Grading (100 Points Total)
-
-| Subtask                                     | Points |
-|---------------------------------------------|--------|
-| Correct implementation of `blocked_matmul`  | 30     |
-| Correct implementation of `parallel_matmul` | 30     |
-| Accurate performance measurements           | 20     |
-| Performance results table in README.md      | 10     |
-| Code clarity, commenting, and organization  | 10     |
-| **Total**                                   | 100    |
-
----
-
-### Tips for Success
-
-- **Cache Optimization**:
-    - Experiment with different block sizes. Start with powers of 2 (e.g., 16, 32, 64).
-    - Use a block size that balances cache usage without excessive overhead.
-- **OpenMP**:
-    - Test with different thread counts to find the optimal number for your system.
-    - Be cautious of false sharing (when threads access nearby memory locations, causing cache coherence issues).
-- **Performance Measurement**:
-    - Run multiple iterations for each test case and report the average time to reduce variability.
-    - Ensure no other heavy processes are running during measurements.
-- **Debugging**:
-    - Validate each implementation against `output.raw` to ensure correctness before optimizing.
-    - Use small test cases to debug your blocked and parallel implementations.
-
-Good luck, and enjoy optimizing your matrix multiplication!
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64 x 64 x 64           | 0.00200009     | 0.000999928      | 0.00100017        | 2.00024x        | 1.99976x         |
+| 1         | 128 x 64 x 128         | 0.00199986     | 0.00999999       | 0                 | 0.199986x       | infx             |
+| 2         | 100 x 128 x 56         | 0.00199986     | 0.00200009       | 0.00300002        | 0.999881x       | 0.666614x        |
+| 3         | 128 x 64 x 128         | 0              |  0.000999928     | 0.00200009        | 0x              | 0x               |
+| 4         | 32 x 128 x 32          | 0              | 0                | 0.00200009        | NaN             | 0x               |
+| 5         | 200 x 100 x 256        | 0.0120001      | 0.00999999       | 0.00400019        | 1.20001x        | 2.99988x         |
+| 6         | 256 x 256 x 256        | 0.0379999      | 0.0369999        | 0.00899982        | 1.02703x        | 4.22229x         |
+| 7         | 256 x 300 x 256        | 0.04           | 0.049            | 0.00900006        | 0.816325x       | 4.44441x         |
+| 8         | 64 x 128 x 64          | 0              | 0                | 0.00499988        | NaN             | 0x               |
+| 9         | 256 x 256 x 257        | 0.04           | 0.0349998        | 0.00999999        | 1.14286x        | 4x               |
