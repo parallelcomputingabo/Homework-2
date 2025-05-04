@@ -1,9 +1,5 @@
 # Parallel Programming
 
-**Åbo Akademi University, Information Technology Department**
-
-**Instructor: Alireza Olama**
-
 ## Homework Assignment 2: Optimizing Matrix Multiplication in C++
 
 
