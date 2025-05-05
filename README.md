@@ -142,7 +142,8 @@ results if I changed it to 8.
 
 The blocked speedup does have some problems for me, Reasons that I have found that might influence the
 outcome might be that because the naive time also runs so fast the extra loops in the blocked solution adds a bit of time to
-the calculation that it does not catch back with these data sets.
+the calculation that it does not catch back with these data sets. Results might also be affected since I did run these tests with
+many other programs active.
 
 I got slightly better results by changing some things in the blocked function but not anything that was consistantly better. 
 

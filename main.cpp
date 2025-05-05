@@ -140,9 +140,15 @@ int main(int argc, char *argv[]) {
     float *C_parallel = new float[m * p];
 
     // Measure performance of naive_matmul
-    double start_time = omp_get_wtime();
-    naive_matmul(C_naive, A, B, m, n, p);
-    double naive_time = omp_get_wtime() - start_time;
+    const int runs = 20;
+    double tot_naive = 0;
+    for (int i = 0; i < runs; i++) {
+        double start_time = omp_get_wtime();
+        naive_matmul(C_naive, A, B, m, n, p);
+        double naive_time = omp_get_wtime() - start_time;
+        tot_naive += naive_time;
+    }
+
 
     // TODO Write naive result to file
 
@@ -166,9 +172,15 @@ int main(int argc, char *argv[]) {
     out.clear();
 
     // Measure performance of blocked_matmul (use block_size = 32 as default)
-    start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 32);
-    double blocked_time = omp_get_wtime() - start_time;
+    double tot_block = 0;
+    for (int i = 0; i < runs; i++) {
+        double start_time = omp_get_wtime();
+        blocked_matmul(C_blocked, A, B, m, n, p, 32);
+        double blocked_time = omp_get_wtime() - start_time;
+        tot_block += blocked_time;
+
+    }
+
 
     // TODO Write blocked result to file
 
@@ -191,9 +203,14 @@ int main(int argc, char *argv[]) {
     out.clear();
 
     // Measure performance of parallel_matmul
-    start_time = omp_get_wtime();
-    parallel_matmul(C_parallel, A, B, m, n, p);
-    double parallel_time = omp_get_wtime() - start_time;
+    double tot_parallel = 0;
+    for (int i = 0; i < runs; i++) {
+        double start_time = omp_get_wtime();
+        parallel_matmul(C_parallel, A, B, m, n, p);
+        double parallel_time = omp_get_wtime() - start_time;
+        tot_parallel += parallel_time;
+    }
+
 
     // TODO Write parallel result to file
 
@@ -216,13 +233,17 @@ int main(int argc, char *argv[]) {
     out.close();
     out.clear();
 
+    double avg_naive = tot_naive / runs;
+    double avg_blocked = tot_block / runs;
+    double avg_parallel = tot_parallel / runs;
+
     // Print performance results
     std::cout << "Case " << case_number << " (" << m << "x" << n << "x" << p << "):\n";
-    std::cout << "Naive time: " << naive_time << " seconds\n";
-    std::cout << "Blocked time: " << blocked_time << " seconds\n";
-    std::cout << "Parallel time: " << parallel_time << " seconds\n";
-    std::cout << "Blocked speedup: " << (naive_time / blocked_time) << "x\n";
-    std::cout << "Parallel speedup: " << (naive_time / parallel_time) << "x\n";
+    std::cout << "Naive time: " << avg_naive << " seconds\n";
+    std::cout << "Blocked time: " << avg_blocked << " seconds\n";
+    std::cout << "Parallel time: " << avg_parallel << " seconds\n";
+    std::cout << "Blocked speedup: " << (avg_naive / avg_blocked) << "x\n";
+    std::cout << "Parallel speedup: " << (avg_naive / avg_parallel) << "x\n";
 
     // Clean up
     delete[] A;
