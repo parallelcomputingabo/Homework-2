@@ -120,11 +120,31 @@ For each test case (0 through 9 in the `data` folder):
     - Wall clock time for each implementation (in seconds).
     - Speedup of blocked and parallel implementations over the naive implementation.
 
-Example table format:
+Performance Measurement table:
+For most of the test cases I had a block size of 32 and changing it to a higher or lower number had barely any effect in some of the
+cases.
+OMP_NUM_THREADS I had at 4 through all the tests that are in the table. For some of the tests though I had more consistent higher 
+results if I changed it to 8.
+
 
 | Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
 |-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
-| 0         | 512 × 512 × 512        | 2.345          | 0.987            | 0.543             | 2.38×           | 4.32×            |
+| 0         | 64 × 64 × 64           | 0.00100017     | 0.000999928      | 0.0.000999928     | 1.00024×        | 1.00024×         |
+| 1         | 128 * 64 * 128         | 0.00300002     | 0.00300002       | 0.00100017        | 1*              | 2.99952*         |
+| 2         | 100 * 128 * 56         | 0.00200009     | 0.00199986       | 0.00100017        | 1.00012*        | 1.99976*         |
+| 3         | 128 * 64 * 128         | 0.00300002     | 0.00300002       | 0.00199986        | 1*              | 1.50012*         |
+| 4         | 32 * 128 * 32          | 0.00100017     | 0.00100017       | 0.000999928       | 1*              | 1.00024*         |
+| 5         | 200 * 100 * 256        | 0.0150001      | 0.0149999        | 0.00499988        | 1.00002*        | 3.0001*          |
+| 6         | 256 * 256 * 256        | 0.043          | 0.046            | 0.0110002         | 0.934782*       | 3.90903*         |
+| 7         | 256 * 300 * 256        | 0.0500002      | 0.0539999        | 0.013             | 0.925931*       | 3.84617*         |
+| 8         | 64 * 128 * 64          | 0.00100017     | 0.000999928      | 0.000999928       | 1.00024*        | 1.00024*         |
+| 9         | 256 * 256 * 257        | 0.043          | 0.0450001        | 0.0110002         | 0.955554*       | 3.90903*         |
+
+The blocked speedup does have some problems for me, Reasons that I have found that might influence the
+outcome might be that because the naive time also runs so fast the extra loops in the blocked solution adds a bit of time to
+the calculation that it does not catch back with these data sets.
+
+I got slightly better results by changing some things in the blocked function but not anything that was consistantly better. 
 
 ---
 
