@@ -6,12 +6,16 @@
 #include <iomanip>
 
 void naive_matmul(float *C, float *A, float *B, int m, int n, int p) {
+    // Initialize elements in C
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < p; ++j) {
+            C[i * p + j] = 0;
+        }
+    }
     // Implement naive matrix multiplication C = A x B
     // A is m x n, B is n x p, C is m x p
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < p; ++j) {
-            // Initialize elements in C
-            C[i * p + j] = 0;
             for (int k = 0; k < n; ++k) {
                 // Access elements by Row-Major indexing, multiply using given formula
                 C[i * p + j] += A[i * n + k] * B[k * p + j];
@@ -137,6 +141,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // Get matrix dimensions
     FileA >> m >> n;
     FileB >> n >> p;
 
@@ -145,6 +150,7 @@ int main(int argc, char *argv[]) {
     float *C_blocked = new float[m * p];
     float *C_parallel = new float[m * p];
 
+    // Allocate memory for matrices A and B
     float* A = (float*)malloc(m * n * sizeof(float));
     // Validate that memory is allocated correctly
     if (A == NULL) {
@@ -209,7 +215,7 @@ int main(int argc, char *argv[]) {
 
     // Measure performance of blocked_matmul (use block_size = 32 as default)
     start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 64);
+    blocked_matmul(C_blocked, A, B, m, n, p, 128);
     double blocked_time = omp_get_wtime() - start_time;
 
     // Write blocked result to file
