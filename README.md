@@ -236,3 +236,23 @@ git push origin student-name
     - Use small test cases to debug your blocked and parallel implementations.
 
 Good luck, and enjoy optimizing your matrix multiplication!
+
+### Results
+
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 1         | 256 × 256 × 256        | 0.0601521      | 0.0709994        | 0.0128932         | 0.84722×        | 4.66539×         |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+|           |                        |                |                  |                   |                 |                  |
+
+
+---
