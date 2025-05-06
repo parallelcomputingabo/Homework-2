@@ -3,6 +3,7 @@
 #include <string>
 #include <omp.h>
 #include <cmath>
+#include <iomanip>
 
 void naive_matmul(float *C, float *A, float *B, int m, int n, int p) {
     // Implement naive matrix multiplication C = A x B
@@ -188,6 +189,7 @@ int main(int argc, char *argv[]) {
 
     // Write the dimensions of C on the first line
     result << m << " " << p << std::endl;
+    result << std::fixed << std::setprecision(2);
     // Iterate C and write each element to result.raw
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < p; ++j) {
@@ -207,7 +209,7 @@ int main(int argc, char *argv[]) {
 
     // Measure performance of blocked_matmul (use block_size = 32 as default)
     start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 32);
+    blocked_matmul(C_blocked, A, B, m, n, p, 64);
     double blocked_time = omp_get_wtime() - start_time;
 
     // Write blocked result to file
@@ -220,6 +222,7 @@ int main(int argc, char *argv[]) {
 
     // Write the dimensions of C on the first line
     result_block << m << " " << p << std::endl;
+    result_block << std::fixed << std::setprecision(2);
     // Iterate C and write each element to result.raw
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < p; ++j) {
@@ -251,6 +254,7 @@ int main(int argc, char *argv[]) {
 
     // Write the dimensions of C on the first line
     result_para << m << " " << p << std::endl;
+    result_para << std::fixed << std::setprecision(2);
     // Iterate C and write each element to result.raw
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < p; ++j) {
