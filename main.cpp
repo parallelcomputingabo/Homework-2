@@ -1,114 +1,171 @@
+// Kalle Fjäder
+#include <filesystem>
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <omp.h>
+#include <vector>
+#include <cstring>
+#include <cstdint>
+#include <algorithm>
+#include <iomanip>
 #include <cmath>
+#include <functional>
+#include <omp.h>
 
-void naive_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
-    //TODO : Implement naive matrix multiplication
+
+static void naive_matmul(float* C,const float* A,const float* B,
+                         uint32_t m,uint32_t n,uint32_t p)
+{
+    std::memset(C,0,sizeof(float)*m*p);
+    for(uint32_t i=0;i<m;++i)
+        for(uint32_t k=0;k<n;++k){
+            float aik=A[i*n+k];
+            for(uint32_t j=0;j<p;++j)
+                C[i*p+j]+=aik*B[k*p+j];
+        }
 }
 
-void blocked_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size) {
-    // TODO: Implement blocked matrix multiplication
-    // A is m x n, B is n x p, C is m x p
-    // Use block_size to divide matrices into submatrices
+static void blocked_matmul(float* C,const float* A,const float* B,
+                           uint32_t m,uint32_t n,uint32_t p,
+                           uint32_t bs=64)
+{
+    std::memset(C,0,sizeof(float)*m*p);
+    for(uint32_t ii=0;ii<m;ii+=bs)
+        for(uint32_t kk=0;kk<n;kk+=bs)
+            for(uint32_t jj=0;jj<p;jj+=bs){
+                uint32_t i_max=std::min(ii+bs,m);
+                uint32_t k_max=std::min(kk+bs,n);
+                uint32_t j_max=std::min(jj+bs,p);
+                for(uint32_t i=ii;i<i_max;++i)
+                    for(uint32_t k=kk;k<k_max;++k){
+                        float aik=A[i*n+k];
+                        for(uint32_t j=jj;j<j_max;++j)
+                            C[i*p+j]+=aik*B[k*p+j];
+                    }
+            }
 }
 
-void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
-    // TODO: Implement parallel matrix multiplication using OpenMP
-    // A is m x n, B is n x p, C is m x p
+static void parallel_matmul(float* C,const float* A,const float* B,
+                            uint32_t m,uint32_t n,uint32_t p)
+{
+    std::memset(C,0,sizeof(float)*m*p);
+    #pragma omp parallel for schedule(static)
+    for(int i=0;i<(int)m;++i)
+        for(uint32_t k=0;k<n;++k){
+            float aik=A[i*n+k];
+            for(uint32_t j=0;j<p;++j)
+                C[i*p+j]+=aik*B[k*p+j];
+        }
 }
 
-bool validate_result(const std::string &result_file, const std::string &reference_file) {
-   //TODO : Implement result validation
+static bool read_matrix_ascii(const std::string& path,
+                              uint32_t& rows,uint32_t& cols,
+                              std::vector<float>& dst)
+{
+    std::ifstream in(path);
+    if(!in||!(in>>rows>>cols)) return false;
+    dst.resize((size_t)rows*cols);
+    for(float& x:dst) if(!(in>>x)) return false;
+    return true;
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <case_number>" << std::endl;
-        return 1;
+static bool write_matrix_ascii(const std::string& path,
+                               uint32_t rows,uint32_t cols,
+                               const float* data)
+{
+    std::ofstream out(path,std::ios::trunc);
+    if(!out) return false;
+    out<<rows<<' '<<cols<<'\n';
+
+    for(uint32_t i=0;i<rows;++i){
+        for(uint32_t j=0;j<cols;++j){
+            float v = data[i*cols + j];
+            int   scaled = int(std::floor(v * 100.f + 0.5f));
+            int   cents  = scaled % 100;
+            int   whole  = scaled / 100;
+
+
+            if(cents == 0){
+                out << whole << '.';
+            } else if(cents % 10 == 0){
+                out << whole << '.' << (cents / 10);
+            } else {
+                out << whole << '.' << std::setw(2) << std::setfill('0') << cents;
+            }
+
+            if(j + 1 != cols) out << ' ';
+        }
+        if (i + 1 != rows)
+            out << '\n';
+    }
+    return true;
+}
+
+static bool identical_files(const std::string& a,const std::string& b)
+{
+    std::ifstream f1(a,std::ios::binary),f2(b,std::ios::binary);
+    if(!f1||!f2) return false;
+    char buf1[1<<14],buf2[1<<14];
+    while(f1&&f2){
+        f1.read(buf1,sizeof buf1);
+        f2.read(buf2,sizeof buf2);
+        if(f1.gcount()!=f2.gcount()) return false;
+        if(std::memcmp(buf1,buf2,f1.gcount())) return false;
+    }
+    return f1.eof()&&f2.eof();
+}
+
+
+static double time_one(const std::function<void()>& fn)
+{
+    int iters=1; double t;
+    do{
+        double t0=omp_get_wtime();
+        for(int i=0;i<iters;++i) fn();
+        t=(omp_get_wtime()-t0)/iters;
+        if(t>=1e-4||iters>=(1<<20)) break;
+        iters*=2;
+    }while(true);
+    return t;
+}
+
+
+int main(int argc,char* argv[])
+{
+    if(argc!=2){ std::cerr<<"Usage: "<<argv[0]<<" <case>\n"; return 1; }
+    int c=std::atoi(argv[1]);
+    if(c<0||c>9){ std::cerr<<"Case 0‑9 only\n"; return 1; }
+
+    std::string folder="data/"+std::to_string(c)+"/";
+    std::string fA=folder+"input0.raw", fB=folder+"input1.raw";
+    std::string fC=folder+"result.raw", fRef=folder+"output.raw";
+
+    uint32_t m=0,n=0,p=0,n2=0; std::vector<float> A,B;
+    if(!read_matrix_ascii(fA,m,n,A)||!read_matrix_ascii(fB,n2,p,B)||n2!=n){
+        std::cerr<<"Failed to read input matrices\n"; return 2;
     }
 
-    int case_number = std::atoi(argv[1]);
-    if (case_number < 0 || case_number > 9) {
-        std::cerr << "Case number must be between 0 and 9" << std::endl;
-        return 1;
-    }
+    std::vector<float> C(m*p);
 
-    // Construct file paths
-    std::string folder = "data/" + std::to_string(case_number) + "/";
-    std::string input0_file = folder + "input0.raw";
-    std::string input1_file = folder + "input1.raw";
-    std::string result_file = folder + "result.raw";
-    std::string reference_file = folder + "output.raw";
+    double t_naive   =time_one([&]{ naive_matmul  (C.data(),A.data(),B.data(),m,n,p); });
+    write_matrix_ascii(fC,m,p,C.data());
+    bool ok_naive    =identical_files(fC,fRef);
 
-    // TODO Read input0.raw (matrix A)
+    double t_blocked =time_one([&]{ blocked_matmul(C.data(),A.data(),B.data(),m,n,p,32); });
+    write_matrix_ascii(fC,m,p,C.data());
+    bool ok_blocked  =identical_files(fC,fRef);
 
+    double t_parallel=time_one([&]{ parallel_matmul(C.data(),A.data(),B.data(),m,n,p); });
+    write_matrix_ascii(fC,m,p,C.data());
+    bool ok_parallel =identical_files(fC,fRef);
 
-    // TODO Read input1.raw (matrix B)
+    std::cout << std::fixed << std::setprecision(6);
+    auto same = [](bool ok){ return ok ? "same" : "diff"; };
 
-
-    // Allocate memory for result matrices
-    float *C_naive = new float[m * p];
-    float *C_blocked = new float[m * p];
-    float *C_parallel = new float[m * p];
-
-    // Measure performance of naive_matmul
-    double start_time = omp_get_wtime();
-    naive_matmul(C_naive, A, B, m, n, p);
-    double naive_time = omp_get_wtime() - start_time;
-
-    // TODO Write naive result to file
-
-
-    // Validate naive result
-    bool naive_correct = validate_result(result_file, reference_file);
-    if (!naive_correct) {
-        std::cerr << "Naive result validation failed for case " << case_number << std::endl;
-    }
-
-    // Measure performance of blocked_matmul (use block_size = 32 as default)
-    start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 32);
-    double blocked_time = omp_get_wtime() - start_time;
-
-    // TODO Write blocked result to file
-
-
-    // Validate blocked result
-    bool blocked_correct = validate_result(result_file, reference_file);
-    if (!blocked_correct) {
-        std::cerr << "Blocked result validation failed for case " << case_number << std::endl;
-    }
-
-    // Measure performance of parallel_matmul
-    start_time = omp_get_wtime();
-    parallel_matmul(C_parallel, A, B, m, n, p);
-    double parallel_time = omp_get_wtime() - start_time;
-
-    // TODO Write parallel result to file
-
-
-    // Validate parallel result
-    bool parallel_correct = validate_result(result_file, reference_file);
-    if (!parallel_correct) {
-        std::cerr << "Parallel result validation failed for case " << case_number << std::endl;
-    }
-
-    // Print performance results
-    std::cout << "Case " << case_number << " (" << m << "x" << n << "x" << p << "):\n";
-    std::cout << "Naive time: " << naive_time << " seconds\n";
-    std::cout << "Blocked time: " << blocked_time << " seconds\n";
-    std::cout << "Parallel time: " << parallel_time << " seconds\n";
-    std::cout << "Blocked speedup: " << (naive_time / blocked_time) << "x\n";
-    std::cout << "Parallel speedup: " << (naive_time / parallel_time) << "x\n";
-
-    // Clean up
-    delete[] A;
-    delete[] B;
-    delete[] C_naive;
-    delete[] C_blocked;
-    delete[] C_parallel;
+    std::cout << "----- Summary -----";
+    std::cout << "Matrix size : " << m << " x " << n << " x " << p << "";
+    std::cout << "Naive     : " << t_naive    << " s  (" << same(ok_naive)   << ")";
+    std::cout << "Blocked   : " << t_blocked  << " s  (" << same(ok_blocked) << ")  speedup " << t_naive / t_blocked  << "";
+    std::cout << "Parallel  : " << t_parallel << " s  (" << same(ok_parallel)<< ")  speedup " << t_naive / t_parallel << "";
 
     return 0;
 }
