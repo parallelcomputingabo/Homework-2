@@ -1,0 +1,1 @@
+/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/optimized_matmul.dir/src/main.cpp.o -o optimized_matmul   -L/opt/homebrew/opt/libomp/lib  -Wl,-rpath,/opt/homebrew/opt/libomp/lib -lomp
