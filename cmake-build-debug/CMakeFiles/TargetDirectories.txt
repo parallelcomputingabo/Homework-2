@@ -1,0 +1,3 @@
+C:/Users/thoma/CLionProjects/Homework-2/cmake-build-debug/CMakeFiles/matmul.dir
+C:/Users/thoma/CLionProjects/Homework-2/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/thoma/CLionProjects/Homework-2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
