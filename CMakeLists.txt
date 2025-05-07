@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(OMP_NUM_THREADS 16)
+
 find_package(OpenMP REQUIRED)
 
 if(OpenMP_CXX_FOUND)
@@ -17,7 +19,7 @@ if(APPLE)
 endif()
 
 
-add_executable(matmul main_ans.cpp)
+add_executable(matmul main.cpp)
 
 
 if(OpenMP_CXX_FOUND)
