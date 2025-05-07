@@ -110,21 +110,33 @@ threads (e.g., 2, 4, 8) by setting the environment variable `OMP_NUM_THREADS`.
 For each test case (0 through 9 in the `data` folder):
 
 - Measure the **wall clock time** for:
-    - Naive matrix multiplication (`naive_matmul`).
-    - Cache-optimized matrix multiplication (`blocked_matmul`).
-    - Parallel matrix multiplication (`parallel_matmul`).
+  - Naive matrix multiplication (`naive_matmul`).
+  - Cache-optimized matrix multiplication (`blocked_matmul`).
+  - Parallel matrix multiplication (`parallel_matmul`).
 - Use `omp_get_wtime()` for timing, as it provides high-resolution wall clock time.
 - Report the times in a table in your submission README.md, including:
-    - Test case number.
-    - Matrix dimensions (m × n × p).
-    - Wall clock time for each implementation (in seconds).
-    - Speedup of blocked and parallel implementations over the naive implementation.
 
-Example table format:
+  - Test case number.
+  - Matrix dimensions (m × n × p).
+  - Wall clock time for each implementation (in seconds).
+  - Speedup of blocked and parallel implementations over the naive implementation.
 
-| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
-|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
-| 0         | 512 × 512 × 512        | 2.345          | 0.987            | 0.543             | 2.38×           | 4.32×            |
+- Performance Measurment
+
+## Performance Results
+
+| Test Case | Dimensions    | Naive (s)  | Blocked (s) | Parallel (s) | Blocked Speedup | Parallel Speedup |
+| --------- | ------------- | ---------- | ----------- | ------------ | --------------- | ---------------- |
+| 0         | (64×64×64)    | 0.00017844 | 0.00017124  | 0.00914784   | 1.04206×        | 0.01951×         |
+| 1         | (128×64×128)  | 0.00079625 | 0.00067623  | 0.00707299   | 1.17748×        | 0.11258×         |
+| 2         | (100×128×56)  | 0.00062665 | 0.00047119  | 0.00676231   | 1.32994×        | 0.09267×         |
+| 3         | (128×64×128)  | 0.00047087 | 0.00070794  | 0.00945540   | 0.66512×        | 0.04980×         |
+| 4         | (32×128×32)   | 0.00006407 | 0.00005424  | 0.00653864   | 1.18139×        | 0.00980×         |
+| 5         | (200×100×256) | 0.00316066 | 0.00279206  | 0.00834594   | 1.13202×        | 0.37871×         |
+| 6         | (256×256×256) | 0.01797660 | 0.00770005  | 0.00820654   | 2.33461×        | 2.19052×         |
+| 7         | (256×300×256) | 0.01672090 | 0.01150840  | 0.00691679   | 1.45293×        | 2.41744×         |
+| 8         | (64×128×64)   | 0.00022694 | 0.00017419  | 0.00024659   | 1.30285×        | 0.92031×         |
+| 9         | (256×256×257) | 0.01027530 | 0.00721948  | 0.01021680   | 1.42328×        | 1.00572×         |
 
 ---
 
@@ -139,9 +151,9 @@ Example table format:
 #### Input/Output and Validation
 
 - Use the same input/output format as Assignment 1:
-    - Input files: `data/<case>/input0.raw` (matrix \( A \)) and `input1.raw` (matrix \( B \)).
-    - Output file: `data/<case>/result.raw` (matrix \( C \)).
-    - Reference file: `data/<case>/output.raw` for validation.
+  - Input files: `data/<case>/input0.raw` (matrix \( A \)) and `input1.raw` (matrix \( B \)).
+  - Output file: `data/<case>/result.raw` (matrix \( C \)).
+  - Reference file: `data/<case>/output.raw` for validation.
 - The executable accepts a case number (0–9) as a command-line argument.
 - Validate correctness by comparing `result.raw` with `output.raw` for each implementation.
 
@@ -151,22 +163,22 @@ Example table format:
 
 - Use the provided `CMakeLists.txt` to build the project.
 - **Additional Requirements**:
-    - Ensure OpenMP is enabled in your compiler (e.g., `-fopenmp` for GCC).
-    - The provided CMake file includes OpenMP support.
+  - Ensure OpenMP is enabled in your compiler (e.g., `-fopenmp` for GCC).
+  - The provided CMake file includes OpenMP support.
 - **Windows Users**:
-    - Use CLion or Visual Studio with CMake.
-    - Alternatively, use MinGW with `cmake -G "MinGW Makefiles"` and `make`.
+  - Use CLion or Visual Studio with CMake.
+  - Alternatively, use MinGW with `cmake -G "MinGW Makefiles"` and `make`.
 - **Linux/Mac Users**:
-    - Make sure gcc compiler is installed (`brew install gcc` on Mac).
-    - Configure cmake to use the correct compiler:
-      ```bash
-      cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ .
-      ```
-    - Run `cmake .` to generate a Makefile, then `make`.
+  - Make sure gcc compiler is installed (`brew install gcc` on Mac).
+  - Configure cmake to use the correct compiler:
+    ```bash
+    cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ .
+    ```
+  - Run `cmake .` to generate a Makefile, then `make`.
 - **Testing OpenMP**:
-    - Set the number of threads using the environment variable `OMP_NUM_THREADS` (e.g., `export OMP_NUM_THREADS=4` on
-      Linux/Mac, or `set OMP_NUM_THREADS=4` on Windows).
-    - Test with different thread counts to find the best performance.
+  - Set the number of threads using the environment variable `OMP_NUM_THREADS` (e.g., `export OMP_NUM_THREADS=4` on
+    Linux/Mac, or `set OMP_NUM_THREADS=4` on Windows).
+  - Test with different thread counts to find the best performance.
 
 ---
 
@@ -210,7 +222,7 @@ git push origin student-name
 ### Grading (100 Points Total)
 
 | Subtask                                     | Points |
-|---------------------------------------------|--------|
+| ------------------------------------------- | ------ |
 | Correct implementation of `blocked_matmul`  | 30     |
 | Correct implementation of `parallel_matmul` | 30     |
 | Accurate performance measurements           | 20     |
@@ -223,16 +235,16 @@ git push origin student-name
 ### Tips for Success
 
 - **Cache Optimization**:
-    - Experiment with different block sizes. Start with powers of 2 (e.g., 16, 32, 64).
-    - Use a block size that balances cache usage without excessive overhead.
+  - Experiment with different block sizes. Start with powers of 2 (e.g., 16, 32, 64).
+  - Use a block size that balances cache usage without excessive overhead.
 - **OpenMP**:
-    - Test with different thread counts to find the optimal number for your system.
-    - Be cautious of false sharing (when threads access nearby memory locations, causing cache coherence issues).
+  - Test with different thread counts to find the optimal number for your system.
+  - Be cautious of false sharing (when threads access nearby memory locations, causing cache coherence issues).
 - **Performance Measurement**:
-    - Run multiple iterations for each test case and report the average time to reduce variability.
-    - Ensure no other heavy processes are running during measurements.
+  - Run multiple iterations for each test case and report the average time to reduce variability.
+  - Ensure no other heavy processes are running during measurements.
 - **Debugging**:
-    - Validate each implementation against `output.raw` to ensure correctness before optimizing.
-    - Use small test cases to debug your blocked and parallel implementations.
+  - Validate each implementation against `output.raw` to ensure correctness before optimizing.
+  - Use small test cases to debug your blocked and parallel implementations.
 
 Good luck, and enjoy optimizing your matrix multiplication!
