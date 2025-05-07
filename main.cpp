@@ -7,12 +7,13 @@
 
 void naive_matmul(float *C, const float *A, const float *B, uint32_t m, uint32_t n, uint32_t p) {
     // Implement naive matrix multiplication
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < p; j++) {
-            C[i * p + j] = 0.00f;
-            for (int k = 0; k < n; k++) {
-                C[i * p + j] += A[i * n + k] * B[k * p + j];
+    for (uint32_t i = 0; i < m; i++) {
+        for (uint32_t j = 0; j < p; j++) {
+            float sum = 0.00f;
+            for (uint32_t k = 0; k < n; k++) {
+                sum += A[i * n + k] * B[k * p + j];
             }
+            C[i * p + j] = sum;
         }
     }
 }
@@ -22,15 +23,19 @@ void blocked_matmul(float *C, const float *A, const float *B, uint32_t m, uint32
     // A is m x n, B is n x p, C is m x p
     // Use block_size to divide matrices into submatrices
     // C = A * B
-    int block_s = block_size;
-    for (int ii = 0; ii < m; ii += block_s) {
-        for (int jj = 0; jj < p; jj += block_s) {
-            for (int kk = 0; kk < n; kk += block_s) {
-                 for (int i = ii; i < fmin(ii + block_s, m); i++) {
-                    for (int j = jj; j < fmin(jj + block_s, p); j++) {
-                        for (int k = kk; k < fmin(kk + block_s, n); k++) {
-                            C[i * p + j] += A[i * n + k] * B[k * p + j];
+    for (uint32_t ii = 0; ii < m; ii += block_size) {
+        uint32_t i_max = (ii + block_size > m) ? m : ii + block_size;
+        for (uint32_t jj = 0; jj < p; jj += block_size) {
+            uint32_t j_max = (jj + block_size > p) ? p : jj + block_size;
+            for (uint32_t kk = 0; kk < n; kk += block_size) {
+                uint32_t k_max = (kk + block_size > n) ? n : kk + block_size;
+                 for (uint32_t i = ii; i < i_max; i++) {
+                    for (uint32_t j = jj; j < j_max; j++) {
+                        float sum = C[i * p + j];
+                        for (uint32_t k = kk; k < k_max; k++) {
+                             sum += A[i * n + k] * B[k * p + j];
                         }
+                        C[i * p + j] = sum;
                     }
                 }
             }
@@ -45,19 +50,21 @@ void parallel_matmul(float *C, const float *A, const float *B, uint32_t m, uint3
     omp_set_num_threads(4);
 
     #pragma omp parallel for
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < p; j++) {
-            for (int k = 0; k < n; k++) {
-                C[i * p + j] += A[i * n + k] * B[k * p + j];
+    for (uint32_t i = 0; i < m; i++) {
+        for (uint32_t j = 0; j < p; j++) {
+            float sum = 0.00f;
+            for (uint32_t k = 0; k < n; k++) {
+                sum += A[i * n + k] * B[k * p + j];
             }
+            C[i * p + j] = sum;
         }
     }
 }
 
 // Writing the files values into the matrix
 void read_file(std::ifstream &input, float *matrix, uint32_t x, uint32_t y) {
-    for (int j = 0; j < x; j++) {
-        for (int k = 0; k < y; k++) {
+    for (uint32_t j = 0; j < x; j++) {
+        for (uint32_t k = 0; k < y; k++) {
             input >> matrix[j * y + k];
         }
     }
@@ -172,8 +179,8 @@ int main(int argc, char *argv[]) {
     std::ofstream result_naive(result_file_naive);
 
     result_naive << m << " " << p << "\n";
-    for (int j = 0; j < m; j++) {
-        for (int k = 0; k < p; k++) {
+    for (uint32_t j = 0; j < m; j++) {
+        for (uint32_t k = 0; k < p; k++) {
             result_naive << C_naive[j * p + k];
 
             if (k != p - 1) {
@@ -201,8 +208,8 @@ int main(int argc, char *argv[]) {
     std::ofstream result_blocked(result_file_blocked);
 
     result_blocked << m << " " << p << "\n";
-    for (int j = 0; j < m; j++) {
-        for (int k = 0; k < p; k++) {
+    for (uint32_t j = 0; j < m; j++) {
+        for (uint32_t k = 0; k < p; k++) {
             result_blocked << C_blocked[j * p + k];
 
             if (k != p - 1) {
@@ -230,8 +237,8 @@ int main(int argc, char *argv[]) {
     std::ofstream result_parallel(result_file_parallel);
 
     result_parallel << m << " " << p << "\n";
-    for (int j = 0; j < m; j++) {
-        for (int k = 0; k < p; k++) {
+    for (uint32_t j = 0; j < m; j++) {
+        for (uint32_t k = 0; k < p; k++) {
             result_parallel << C_parallel[j * p + k];
 
             if (k != p - 1) {
