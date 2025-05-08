@@ -1,114 +1,194 @@
+#include <cassert>
+#include <chrono>
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <vector>
 #include <omp.h>
-#include <cmath>
+#include <filesystem>
+#include <algorithm>
 
-void naive_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
-    //TODO : Implement naive matrix multiplication
+namespace fs = std::filesystem;
+
+using matrix = std::vector<std::vector<double>>;
+
+void reset_matrix(matrix &C, int m, int p) {
+    for (int i = 0; i < m; ++i)
+        for (int j = 0; j < p; ++j)
+            C[i][j] = 0.0;
 }
 
-void blocked_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size) {
-    // TODO: Implement blocked matrix multiplication
-    // A is m x n, B is n x p, C is m x p
-    // Use block_size to divide matrices into submatrices
+bool are_equal(const matrix &X, const matrix &Y, int m, int p) {
+    for (int i = 0; i < m; ++i)
+        for (int j = 0; j < p; ++j)
+            if (X[i][j] != Y[i][j])
+                return false;
+    return true;
 }
 
-void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
-    // TODO: Implement parallel matrix multiplication using OpenMP
-    // A is m x n, B is n x p, C is m x p
+auto multiply_ijk(const matrix &A, const matrix &B, matrix &C, int m, int n, int p) {
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < m; ++i)
+        for (int j = 0; j < p; ++j)
+            for (int k = 0; k < n; ++k)
+                C[i][j] += A[i][k] * B[k][j];
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
-bool validate_result(const std::string &result_file, const std::string &reference_file) {
-   //TODO : Implement result validation
+auto multiply_ikj(const matrix &A, const matrix &B, matrix &C, int m, int n, int p) {
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < m; ++i)
+        for (int k = 0; k < n; ++k)
+            for (int j = 0; j < p; ++j)
+                C[i][j] += A[i][k] * B[k][j];
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
-int main(int argc, char *argv[]) {
+void multiply_blocked(const matrix &A, const matrix &B, matrix &C, int m, int n, int p, int blockSize) {
+    for (int ii = 0; ii < m; ii += blockSize)
+        for (int jj = 0; jj < p; jj += blockSize)
+            for (int kk = 0; kk < n; kk += blockSize)
+                for (int i = ii; i < std::min(ii + blockSize, m); ++i)
+                    for (int k = kk; k < std::min(kk + blockSize, n); ++k)
+                        for (int j = jj; j < std::min(jj + blockSize, p); ++j)
+                            C[i][j] += A[i][k] * B[k][j];
+}
+
+void multiply_blocked_omp(const matrix &A, const matrix &B, matrix &C, int m, int n, int p, int blockSize) {
+    #pragma omp parallel for collapse(2) schedule(static)
+    for (int ii = 0; ii < m; ii += blockSize)
+        for (int jj = 0; jj < p; jj += blockSize)
+            for (int kk = 0; kk < n; kk += blockSize)
+                for (int i = ii; i < std::min(ii + blockSize, m); ++i)
+                    for (int k = kk; k < std::min(kk + blockSize, n); ++k)
+                        for (int j = jj; j < std::min(jj + blockSize, p); ++j)
+                            C[i][j] += A[i][k] * B[k][j];
+}
+
+void save_matrix_to_raw(const matrix &C, const std::string &folder, const std::string &filename, int m, int p) {
+    if (!fs::exists(folder)) {
+        fs::create_directory(folder);
+    }
+
+    std::string filepath = folder + "/" + filename;
+    std::ofstream file(filepath);
+    if (!file) {
+        std::cerr << "Failed to Write: " << filepath << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < m; ++i)
+        for (int j = 0; j < p; ++j)
+            file << C[i][j] << " ";
+    file << "\n";
+    file.close();
+}
+
+matrix read_matrix(const std::string &path, int &rows, int &cols) {
+    std::ifstream file(path);
+    if (!file) {
+        std::cerr << "Failed to open: " << path << std::endl;
+        exit(1);
+    }
+
+    file >> rows >> cols;
+    matrix M(rows, std::vector<double>(cols));
+    for (int i = 0; i < rows; ++i)
+        for (int j = 0; j < cols; ++j)
+            file >> M[i][j];
+    return M;
+}
+
+void print_speedup(double naive_time, double blocked_time, double parallel_time) {
+    double blocked_speedup = naive_time / blocked_time;
+    double parallel_speedup = naive_time / parallel_time;
+    std::cout << "Blocked Speedup: " << blocked_speedup << std::endl;
+    std::cout << "Parallel Speedup: " << parallel_speedup << std::endl;
+}
+
+int main(int argc, char **argv) {
     if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <case_number>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <folder_number>" << std::endl;
         return 1;
     }
 
-    int case_number = std::atoi(argv[1]);
-    if (case_number < 0 || case_number > 9) {
-        std::cerr << "Case number must be between 0 and 9" << std::endl;
+    int dir_num = std::stoi(argv[1]);
+    std::string folder = "data/" + std::to_string(dir_num);
+
+    // Construct the full path for input files based on the folder number
+    std::string input0_file = folder + "/input0.raw";
+    std::string input1_file = folder + "/input1.raw";
+
+    int m, n, n2, p;
+    matrix A = read_matrix(input0_file, m, n);
+    matrix B = read_matrix(input1_file, n2, p);
+
+    if (n != n2) {
+        std::cerr << "Dimension mismatch: A is " << m << "x" << n << ", B is " << n2 << "x" << p << std::endl;
         return 1;
     }
 
-    // Construct file paths
-    std::string folder = "data/" + std::to_string(case_number) + "/";
-    std::string input0_file = folder + "input0.raw";
-    std::string input1_file = folder + "input1.raw";
-    std::string result_file = folder + "result.raw";
-    std::string reference_file = folder + "output.raw";
+    // Output the matrix size
+    std::cout << "Matrix Size: " << m << " x " << p << std::endl;
 
-    // TODO Read input0.raw (matrix A)
+    matrix C1(m, std::vector<double>(p));
+    matrix C2(m, std::vector<double>(p));
+    const int blockSize = 32;
 
+    // IJK
+    reset_matrix(C1, m, p);
+    auto ijk_time = multiply_ijk(A, B, C1, m, n, p);
+    std::cout << "IJK: " << ijk_time << " ms" << std::endl;
+    save_matrix_to_raw(C1, folder, "result_ijk.raw", m, p);
 
-    // TODO Read input1.raw (matrix B)
+    // IKJ
+    reset_matrix(C2, m, p);
+    auto ikj_time = multiply_ikj(A, B, C2, m, n, p);
+    std::cout << "IKJ: " << ikj_time << " ms" << std::endl;
+    save_matrix_to_raw(C2, folder, "result_ikj.raw", m, p);
 
-
-    // Allocate memory for result matrices
-    float *C_naive = new float[m * p];
-    float *C_blocked = new float[m * p];
-    float *C_parallel = new float[m * p];
-
-    // Measure performance of naive_matmul
-    double start_time = omp_get_wtime();
-    naive_matmul(C_naive, A, B, m, n, p);
-    double naive_time = omp_get_wtime() - start_time;
-
-    // TODO Write naive result to file
-
-
-    // Validate naive result
-    bool naive_correct = validate_result(result_file, reference_file);
-    if (!naive_correct) {
-        std::cerr << "Naive result validation failed for case " << case_number << std::endl;
+    if (!are_equal(C1, C2, m, p)) {
+        std::cerr << "Error: IJK and IKJ results do not match!" << std::endl;
+        return 1;
     }
 
-    // Measure performance of blocked_matmul (use block_size = 32 as default)
-    start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 32);
-    double blocked_time = omp_get_wtime() - start_time;
+    // Blocked
+    reset_matrix(C1, m, p);
+    auto start = std::chrono::high_resolution_clock::now();
+    multiply_blocked(A, B, C1, m, n, p, blockSize);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto blocked_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "Blocked: " << blocked_time << " ms" << std::endl;
+    save_matrix_to_raw(C1, folder, "result_blocked.raw", m, p);
 
-    // TODO Write blocked result to file
+    // Blocked + OpenMP (default 1 thread)
+    reset_matrix(C2, m, p);
+    start = std::chrono::high_resolution_clock::now();
+    multiply_blocked_omp(A, B, C2, m, n, p, blockSize);
+    end = std::chrono::high_resolution_clock::now();
+    auto parallel_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "Blocked + OpenMP: " << parallel_time << " ms" << std::endl;
+    save_matrix_to_raw(C2, folder, "result_blocked_omp.raw", m, p);
 
-
-    // Validate blocked result
-    bool blocked_correct = validate_result(result_file, reference_file);
-    if (!blocked_correct) {
-        std::cerr << "Blocked result validation failed for case " << case_number << std::endl;
+    if (!are_equal(C1, C2, m, p)) {
+        std::cerr << "Error: Blocked and Blocked+OpenMP results do not match!" << std::endl;
+        return 1;
     }
 
-    // Measure performance of parallel_matmul
-    start_time = omp_get_wtime();
-    parallel_matmul(C_parallel, A, B, m, n, p);
-    double parallel_time = omp_get_wtime() - start_time;
+    // Speedup Calculation
+    print_speedup(ijk_time, blocked_time, parallel_time);
 
-    // TODO Write parallel result to file
-
-
-    // Validate parallel result
-    bool parallel_correct = validate_result(result_file, reference_file);
-    if (!parallel_correct) {
-        std::cerr << "Parallel result validation failed for case " << case_number << std::endl;
+    // Experiment with multiple thread counts
+    for (int threads = 1; threads <= 8; ++threads) {
+        omp_set_num_threads(threads);
+        reset_matrix(C2, m, p);
+        start = std::chrono::high_resolution_clock::now();
+        multiply_blocked_omp(A, B, C2, m, n, p, blockSize);
+        end = std::chrono::high_resolution_clock::now();
+        double time_with_threads = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        std::cout << "Blocked + OpenMP with " << threads << " threads: " << time_with_threads << " ms" << std::endl;
     }
-
-    // Print performance results
-    std::cout << "Case " << case_number << " (" << m << "x" << n << "x" << p << "):\n";
-    std::cout << "Naive time: " << naive_time << " seconds\n";
-    std::cout << "Blocked time: " << blocked_time << " seconds\n";
-    std::cout << "Parallel time: " << parallel_time << " seconds\n";
-    std::cout << "Blocked speedup: " << (naive_time / blocked_time) << "x\n";
-    std::cout << "Parallel speedup: " << (naive_time / parallel_time) << "x\n";
-
-    // Clean up
-    delete[] A;
-    delete[] B;
-    delete[] C_naive;
-    delete[] C_blocked;
-    delete[] C_parallel;
 
     return 0;
 }
