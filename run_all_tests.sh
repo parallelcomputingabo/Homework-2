@@ -26,4 +26,4 @@ do
     printf "%-9s | %-15s | %-9s | %-11s | %-13s | %-15s | %-16s\n" "$i" "$DIM" "$NAIVE" "$BLOCKED" "$PARALLEL" "$BS" "$PS" >> $OUTPUT_FILE
 done
 
-echo -e "\n✅ All tests completed. Results saved in $OUTPUT_FILE."
+echo -e "\n All tests completed. Results saved in $OUTPUT_FILE."
