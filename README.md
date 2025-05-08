@@ -236,3 +236,25 @@ git push origin student-name
     - Use small test cases to debug your blocked and parallel implementations.
 
 Good luck, and enjoy optimizing your matrix multiplication!
+
+---
+
+### Results
+
+The best results can be seen in the table below (block size 32, 12 threads):
+
+| Test Case | Dimensions (m x n x p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| 0         | 64  x 64  x 64         | 0.000140       | 0.000127         | 0.000260          | 1.101x          | 0.538x           |
+| 1         | 128 x 64  x 128        | 0.000570       | 0.000511         | 0.000350          | 1.115x          | 1.627x           |
+| 2         | 100 x 128 x 56         | 0.000531       | 0.000389         | 0.008613          | 1.365x          | 0.062x           |
+| 3         | 128 x 64  x 128        | 0.000563       | 0.000571         | 0.000323          | 0.987x          | 1.742x           |
+| 4         | 32  x 128 x 32         | 0.000103       | 0.000079         | 0.000261          | 1.304x          | 0.396x           |
+| 5         | 200 x 100 x 256        | 0.005079       | 0.002296         | 0.001107          | 2.212x          | 4.587x           |
+| 6         | 256 x 256 x 256        | 0.017202       | 0.007565         | 0.003063          | 2.274x          | 5.616x           |
+| 7         | 256 x 300 x 256        | 0.020208       | 0.009192         | 0.003385          | 2.199x          | 5.970x           |
+| 8         | 64  x 128 x 64         | 0.000376       | 0.000306         | 0.000302          | 1.231x          | 1.246x           |
+| 9         | 256 x 256 x 257        | 0.011176       | 0.007139         | 0.001828          | 1.565x          | 6.115x           |
+
+In most cases the parallel speedup was significantly higher than the blocked speedup, however for cases 0, 2, and 4
+the parallel implementation ended up being much slower than both the blocked and naive implementation.
