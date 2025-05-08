@@ -1,0 +1,1 @@
+/usr/local/bin/g++-14  -fopenmp -D_Alignof=alignof -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib CMakeFiles/matmul.dir/main.cpp.o -o matmul  /usr/local/Cellar/gcc/14.2.0_1/lib/gcc/current/libgomp.dylib
