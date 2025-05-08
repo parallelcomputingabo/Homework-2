@@ -41,7 +41,6 @@ void blocked_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32
 
 void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p)
 {
-// TODO: Implement parallel matrix multiplication using OpenMP
 // A is m x n, B is n x p, C is m x p
 #pragma omp parallel for
     for (uint32_t i = 0; i < m; i++)
@@ -189,12 +188,11 @@ int main(int argc, char *argv[])
     float *C_blocked = new float[m * p];
     float *C_parallel = new float[m * p];
 
+    // NAIVE START
     // Measure performance of naive_matmul
     double start_time = omp_get_wtime();
     naive_matmul(C_naive, A, B, m, n, p);
     double naive_time = omp_get_wtime() - start_time;
-
-    // TODO Write naive result to file
 
     FILE *result = fopen(result_file.c_str(), "w");
     if (result == NULL)
@@ -212,12 +210,12 @@ int main(int argc, char *argv[])
         std::cerr << "Naive result validation failed for case " << case_number << std::endl;
     }
 
+    // BLOCKED START
     // Measure performance of blocked_matmul (use block_size = 32 as default)
     start_time = omp_get_wtime();
     blocked_matmul(C_blocked, A, B, m, n, p, 32);
     double blocked_time = omp_get_wtime() - start_time;
 
-    // TODO Write blocked result to file
     result = fopen(result_file.c_str(), "w");
     if (result == NULL)
     {
@@ -234,12 +232,12 @@ int main(int argc, char *argv[])
         std::cerr << "Blocked result validation failed for case " << case_number << std::endl;
     }
 
+    // PARALLEL START
     // Measure performance of parallel_matmul
     start_time = omp_get_wtime();
     parallel_matmul(C_parallel, A, B, m, n, p);
     double parallel_time = omp_get_wtime() - start_time;
 
-    // TODO Write parallel result to file
     result = fopen(result_file.c_str(), "w");
     if (result == NULL)
     {

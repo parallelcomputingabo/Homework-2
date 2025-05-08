@@ -9,4 +9,4 @@ matmul_p: main.cpp
 	g++ $(CFLAGS) -DPERFORMANCE_MD -o matmul_p main.cpp
 
 clean:
-	rm -f ./matmul
+	rm -f ./matmul ./matmul_p
