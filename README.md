@@ -236,3 +236,21 @@ git push origin student-name
     - Use small test cases to debug your blocked and parallel implementations.
 
 Good luck, and enjoy optimizing your matrix multiplication!
+
+---
+# Results
+
+The following results were obtained with a block size of 32 and a OMP_NUM_THREADS of 8.
+
+| Test Case | Dimensions (m × n × p) | Naive Time (s) | Blocked Time (s) | Parallel Time (s) | Blocked Speedup | Parallel Speedup |
+|-----------|------------------------|----------------|------------------|-------------------|-----------------|------------------|
+| Case 0    | 64 × 64 × 64           | 0.001092       | 0.001221         | 0.000386          | 0.894349x       | 2.82902x         |
+| Case 1    | 128 × 64 × 128         | 0.003803       | 0.004292         | 0.001009          | 0.886067x       | 3.76908x         |
+| Case 2    | 100 × 128 × 56         | 0.002663       | 0.002945         | 0.000933999       | 0.904245x       | 2.85118x         |
+| Case 3    | 128 × 64 × 128         | 0.00387        | 0.00427          | 0.001542          | 0.906323x       | 2.50973x         |
+| Case 4    | 32 × 128 × 32          | 0.000464       | 0.000565         | 0.00024           | 0.821239x       | 1.93333x         |
+| Case 5    | 200 × 100 × 256        | 0.018409       | 0.021625         | 0.004873          | 0.851283x       | 3.77775x         |
+| Case 6    | 256 × 256 × 256        | 0.059081       | 0.068912         | 0.014825          | 0.85734x        | 3.98523x         |
+| Case 7    | 256 × 300 × 256        | 0.070174       | 0.082439         | 0.019428          | 0.851223x       | 3.6120x          |
+| Case 8    | 64 × 128 × 64          | 0.001954       | 0.002169         | 0.000576          | 0.900876x       | 3.39236x         |
+| Case 9    | 256 × 256 × 257        | 0.059597       | 0.06816          | 0.013344          | 0.874369x       | 4.4662x          |

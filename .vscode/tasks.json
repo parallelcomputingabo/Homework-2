@@ -1,0 +1,10 @@
+{
+  "label": "build and run matmul",
+  "type": "shell",
+  "command": ".vscode/run.sh",
+  "group": {
+    "kind": "build",
+    "isDefault": true
+  },
+  "problemMatcher": []
+}
