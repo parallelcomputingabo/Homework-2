@@ -17,9 +17,9 @@ if(APPLE)
 endif()
 
 
-add_executable(matmul main_ans.cpp)
+add_executable(main main.cpp)
 
 
 if(OpenMP_CXX_FOUND)
-    target_link_libraries(matmul PUBLIC OpenMP::OpenMP_CXX)
+    target_link_libraries(main PUBLIC OpenMP::OpenMP_CXX)
 endif()

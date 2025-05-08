@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/workspaces/Homework-2/build",
+  "command": "/usr/bin/g++     -fopenmp -g   -fopenmp -std=gnu++11 -o CMakeFiles/main.dir/main.cpp.o -c /workspaces/Homework-2/main.cpp",
+  "file": "/workspaces/Homework-2/main.cpp"
+}
+]
