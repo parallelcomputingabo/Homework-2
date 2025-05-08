@@ -3,24 +3,104 @@
 #include <string>
 #include <omp.h>
 #include <cmath>
+#include <iomanip>
+#include <algorithm>
 
 void naive_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
     //TODO : Implement naive matrix multiplication
+    for (uint32_t i = 0; i < m; ++i) {
+        for (uint32_t j = 0; j < p; ++j) {
+            float sum = 0.0f;
+            for (uint32_t k = 0; k < n; ++k) {
+                sum += A[i * n + k] * B[k * p + j];
+            }
+            C[i * p + j] = sum;
+        }
+    }
 }
 
 void blocked_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size) {
     // TODO: Implement blocked matrix multiplication
     // A is m x n, B is n x p, C is m x p
     // Use block_size to divide matrices into submatrices
+    for (uint32_t ii = 0; ii < m; ii += block_size) {
+        for (uint32_t jj = 0; jj < p; jj += block_size) {
+            for (uint32_t kk = 0; kk < n; kk += block_size) {
+                for (uint32_t i = ii; i < std::min(ii + block_size, m); ++i) {
+                    for (uint32_t j = jj; j < std::min(jj + block_size, p); ++j) {
+                        float sum = 0.0f;
+                        for (uint32_t k = kk; k < std::min(kk + block_size, n); ++k) {
+                            sum += A[i * n + k] * B[k * p + j];
+                        }
+                        C[i * p + j] += sum;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
     // TODO: Implement parallel matrix multiplication using OpenMP
     // A is m x n, B is n x p, C is m x p
+    #pragma omp parallel for
+    for (int i = 0; i < (int)m; ++i) {
+        for (uint32_t j = 0; j < p; ++j) {
+            float sum = 0.0f;
+            for (uint32_t k = 0; k < n; ++k) {
+                sum += A[i * n + k] * B[k * p + j];
+            }
+            C[i * p + j] = sum;
+        }
+    }
+}
+
+float* read_matrix(const std::string& filename, uint32_t& rows, uint32_t& cols) {
+    // TODO: Read input matrix from file
+    std::ifstream file(filename);
+    if (!file) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        exit(1);
+    }
+
+    file >> rows >> cols;
+    float* matrix = new float[rows * cols];
+    for (uint32_t i = 0; i < rows * cols; ++i) {
+        file >> matrix[i];
+    }
+    return matrix;
+}
+
+void write_matrix(const std::string& filename, const float* matrix, uint32_t rows, uint32_t cols) {
+    // TODO: Write output matrix to file
+    std::ofstream file(filename);
+    file << rows << " " << cols << "\n";
+    file << std::fixed << std::setprecision(2);
+    for (uint32_t i = 0; i < rows * cols; ++i) {
+        file << matrix[i] << "\n";
+    }
 }
 
 bool validate_result(const std::string &result_file, const std::string &reference_file) {
-   //TODO : Implement result validation
+    //TODO : Implement result validation
+    std::ifstream res(result_file), ref(reference_file);
+    if (!res || !ref) return false;
+
+    uint32_t r1, c1, r2, c2;
+    res >> r1 >> c1;
+    ref >> r2 >> c2;
+    if (r1 != r2 || c1 != c2) return false;
+
+    float a, b;
+    for (uint32_t i = 0; i < r1 * c1; ++i) {
+        res >> a;
+        ref >> b;
+        if (std::fabs(a - b) > 1e-2) {
+            std::cerr << "Mismatch at index " << i << ": " << a << " vs " << b << std::endl;
+            return false;
+        }
+    }
+    return true;
 }
 
 int main(int argc, char *argv[]) {
@@ -43,15 +123,20 @@ int main(int argc, char *argv[]) {
     std::string reference_file = folder + "output.raw";
 
     // TODO Read input0.raw (matrix A)
-
+    uint32_t m, n, n2, p;
+    float* A = read_matrix(input0_file, m, n);
 
     // TODO Read input1.raw (matrix B)
-
+    float* B = read_matrix(input1_file, n2, p);
+    if (n != n2) {
+        std::cerr << "Matrix dimension mismatch: A is " << m << "x" << n << ", B is " << n2 << "x" << p << std::endl;
+        return 1;
+    }
 
     // Allocate memory for result matrices
-    float *C_naive = new float[m * p];
-    float *C_blocked = new float[m * p];
-    float *C_parallel = new float[m * p];
+    float *C_naive = new float[m * p]();
+    float *C_blocked = new float[m * p]();
+    float *C_parallel = new float[m * p]();
 
     // Measure performance of naive_matmul
     double start_time = omp_get_wtime();
@@ -59,7 +144,7 @@ int main(int argc, char *argv[]) {
     double naive_time = omp_get_wtime() - start_time;
 
     // TODO Write naive result to file
-
+    write_matrix(result_file, C_naive, m, p);
 
     // Validate naive result
     bool naive_correct = validate_result(result_file, reference_file);
@@ -73,7 +158,7 @@ int main(int argc, char *argv[]) {
     double blocked_time = omp_get_wtime() - start_time;
 
     // TODO Write blocked result to file
-
+    write_matrix(result_file, C_blocked, m, p);
 
     // Validate blocked result
     bool blocked_correct = validate_result(result_file, reference_file);
@@ -87,7 +172,7 @@ int main(int argc, char *argv[]) {
     double parallel_time = omp_get_wtime() - start_time;
 
     // TODO Write parallel result to file
-
+    write_matrix(result_file, C_parallel, m, p);
 
     // Validate parallel result
     bool parallel_correct = validate_result(result_file, reference_file);
