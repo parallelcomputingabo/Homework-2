@@ -1,114 +1,161 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <omp.h>
-#include <cmath>
+#include <cmath>      // For std::fabs function
+#include <iostream>   // For standard I/O
+#include <fstream>    // For file stream handling
+#include <cstdlib>    // For EXIT_SUCCESS, EXIT_FAILURE macros
+#include <cstdint>    // For uint32_t type
+#include <iomanip>    // For output formatting
+#include <omp.h>      // For OpenMP parallelization
+#include <algorithm>
 
-void naive_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
-    //TODO : Implement naive matrix multiplication
+// Function to perform naive matrix multiplication (C = A * B)
+void naive_matmul(float* matrix_C, float* matrix_A, float* matrix_B, uint32_t m, uint32_t n, uint32_t p)
+{
+    for (std::size_t i = 0; i < m; ++i)
+    {
+        for (std::size_t j = 0; j < p; ++j)
+        {
+            float sum = 0.0f;
+            for (std::size_t k = 0; k < n; ++k)
+            {
+                sum += matrix_A[i * n + k] * matrix_B[k * p + j];
+            }
+            matrix_C[i * p + j] = sum;
+        }
+    }
 }
 
-void blocked_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size) {
-    // TODO: Implement blocked matrix multiplication
-    // A is m x n, B is n x p, C is m x p
-    // Use block_size to divide matrices into submatrices
+// Blocked matrix multiplication (Cache Optimization)
+void blocked_matmul(float* matrix_C, float* matrix_A, float* matrix_B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size)
+{
+    for (std::size_t ii = 0; ii < m; ii += block_size)
+    {
+        for (std::size_t jj = 0; jj < p; jj += block_size)
+        {
+            for (std::size_t kk = 0; kk < n; kk += block_size)
+            {
+                for (std::size_t i = ii; i < std::min(static_cast<std::size_t>(ii + block_size), static_cast<std::size_t>(m)); ++i)
+                {
+                    for (std::size_t j = jj; j < std::min(static_cast<std::size_t>(jj + block_size), static_cast<std::size_t>(p)); ++j)
+                    {
+                        float sum = 0.0f;
+                        for (std::size_t k = kk; k < std::min(static_cast<std::size_t>(kk + block_size), static_cast<std::size_t>(n)); ++k)
+                        {
+                            sum += matrix_A[i * n + k] * matrix_B[k * p + j];
+                        }
+                        matrix_C[i * p + j] += sum;
+                    }
+                }
+            }
+        }
+    }
 }
 
-void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
-    // TODO: Implement parallel matrix multiplication using OpenMP
-    // A is m x n, B is n x p, C is m x p
+// Parallel matrix multiplication using OpenMP
+void parallel_matmul(float* matrix_C, float* matrix_A, float* matrix_B, uint32_t m, uint32_t n, uint32_t p)
+{
+    #pragma omp parallel for
+    for (std::size_t i = 0; i < m; ++i)
+    {
+        for (std::size_t j = 0; j < p; ++j)
+        {
+            float sum = 0.0f;
+            for (std::size_t k = 0; k < n; ++k)
+            {
+                sum += matrix_A[i * n + k] * matrix_B[k * p + j];
+            }
+            matrix_C[i * p + j] = sum;
+        }
+    }
 }
 
-bool validate_result(const std::string &result_file, const std::string &reference_file) {
-   //TODO : Implement result validation
+// Function to validate that the result matches the expected output
+bool validate(const std::string& result_path, const std::string& output_path)
+{
+    std::ifstream result(result_path);
+    std::ifstream output(output_path);
+
+    if (!result || !output)
+        return false;
+
+    int m1, n1, m2, n2;
+    result >> m1 >> n1;
+    output >> m2 >> n2;
+
+    if (m1 != m2 || n1 != n2)
+        return false;
+
+    constexpr float tolerance = 1e-3f;
+    float val1 = 0.0f, val2 = 0.0f;
+
+    while (result >> val1 && output >> val2)
+    {
+        if (std::fabs(val1 - val2) >= tolerance)
+            return false;
+    }
+
+    return result.eof() && output.eof();
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <case_number>" << std::endl;
-        return 1;
+// Main function to manage matrix multiplication and performance measurement
+int main(int argc, char* argv[])
+{
+    if (argc != 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " <test_case_number>" << std::endl;
+        return EXIT_FAILURE;
     }
 
-    int case_number = std::atoi(argv[1]);
-    if (case_number < 0 || case_number > 9) {
-        std::cerr << "Case number must be between 0 and 9" << std::endl;
-        return 1;
+    int test_case = std::atoi(argv[1]);
+    if (test_case < 0 || test_case > 9)
+    {
+        std::cerr << "Test case number must be between 0 and 9." << std::endl;
+        return EXIT_FAILURE;
     }
 
-    // Construct file paths
-    std::string folder = "data/" + std::to_string(case_number) + "/";
-    std::string input0_file = folder + "input0.raw";
-    std::string input1_file = folder + "input1.raw";
-    std::string result_file = folder + "result.raw";
-    std::string reference_file = folder + "output.raw";
+    const std::string base_path = "data/" + std::to_string(test_case) + "/";
+    const std::string input0_path = base_path + "input0.raw";
+    const std::string input1_path = base_path + "input1.raw";
+    const std::string result_path = base_path + "result.raw";
+    const std::string output_path = base_path + "output.raw";
 
-    // TODO Read input0.raw (matrix A)
+    std::ifstream input0(input0_path);
+    std::ifstream input1(input1_path);
 
+    int m, n, p;
+    input0 >> m >> n;
+    input1 >> n >> p;
 
-    // TODO Read input1.raw (matrix B)
+    float* matrix_A = new float[m * n];
+    float* matrix_B = new float[n * p];
+    float* matrix_C = new float[m * p];
 
+    for (std::size_t i = 0; i < m * n; ++i)
+        input0 >> matrix_A[i];
+    for (std::size_t i = 0; i < n * p; ++i)
+        input1 >> matrix_B[i];
 
-    // Allocate memory for result matrices
-    float *C_naive = new float[m * p];
-    float *C_blocked = new float[m * p];
-    float *C_parallel = new float[m * p];
+    input0.close();
+    input1.close();
 
-    // Measure performance of naive_matmul
-    double start_time = omp_get_wtime();
-    naive_matmul(C_naive, A, B, m, n, p);
-    double naive_time = omp_get_wtime() - start_time;
+    double start = omp_get_wtime();
+    naive_matmul(matrix_C, matrix_A, matrix_B, m, n, p);
+    double naive_time = omp_get_wtime() - start;
 
-    // TODO Write naive result to file
+    start = omp_get_wtime();
+    blocked_matmul(matrix_C, matrix_A, matrix_B, m, n, p, 64);
+    double blocked_time = omp_get_wtime() - start;
 
+    start = omp_get_wtime();
+    parallel_matmul(matrix_C, matrix_A, matrix_B, m, n, p);
+    double parallel_time = omp_get_wtime() - start;
 
-    // Validate naive result
-    bool naive_correct = validate_result(result_file, reference_file);
-    if (!naive_correct) {
-        std::cerr << "Naive result validation failed for case " << case_number << std::endl;
-    }
+    std::cout << "Naive Time: " << naive_time << " s\n";
+    std::cout << "Blocked Time: " << blocked_time << " s\n";
+    std::cout << "Parallel Time: " << parallel_time << " s\n";
 
-    // Measure performance of blocked_matmul (use block_size = 32 as default)
-    start_time = omp_get_wtime();
-    blocked_matmul(C_blocked, A, B, m, n, p, 32);
-    double blocked_time = omp_get_wtime() - start_time;
+    delete[] matrix_A;
+    delete[] matrix_B;
+    delete[] matrix_C;
 
-    // TODO Write blocked result to file
-
-
-    // Validate blocked result
-    bool blocked_correct = validate_result(result_file, reference_file);
-    if (!blocked_correct) {
-        std::cerr << "Blocked result validation failed for case " << case_number << std::endl;
-    }
-
-    // Measure performance of parallel_matmul
-    start_time = omp_get_wtime();
-    parallel_matmul(C_parallel, A, B, m, n, p);
-    double parallel_time = omp_get_wtime() - start_time;
-
-    // TODO Write parallel result to file
-
-
-    // Validate parallel result
-    bool parallel_correct = validate_result(result_file, reference_file);
-    if (!parallel_correct) {
-        std::cerr << "Parallel result validation failed for case " << case_number << std::endl;
-    }
-
-    // Print performance results
-    std::cout << "Case " << case_number << " (" << m << "x" << n << "x" << p << "):\n";
-    std::cout << "Naive time: " << naive_time << " seconds\n";
-    std::cout << "Blocked time: " << blocked_time << " seconds\n";
-    std::cout << "Parallel time: " << parallel_time << " seconds\n";
-    std::cout << "Blocked speedup: " << (naive_time / blocked_time) << "x\n";
-    std::cout << "Parallel speedup: " << (naive_time / parallel_time) << "x\n";
-
-    // Clean up
-    delete[] A;
-    delete[] B;
-    delete[] C_naive;
-    delete[] C_blocked;
-    delete[] C_parallel;
-
-    return 0;
+    return EXIT_SUCCESS;
 }

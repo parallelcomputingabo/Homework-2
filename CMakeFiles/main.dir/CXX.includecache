@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/workspaces/Homework-2/main.cpp
+cmath
+-
+iostream
+-
+fstream
+-
+cstdlib
+-
+cstdint
+-
+iomanip
+-
+omp.h
+-
+algorithm
+-
+
