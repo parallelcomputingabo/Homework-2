@@ -10,7 +10,7 @@ Note that for each test in the data folder, 3 result files are generated:
 - `result_parallel.raw`
 
 
-Building: Cmake was used for building using g++14,gcc 14.
+Building: Cmake was used for building using g++14,gcc 14. run_results.sh bash script in the build file was used for compiling and generating tests output.
 
 Averaged results of 3 test rounds: 
 
