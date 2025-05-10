@@ -1,0 +1,3 @@
+/Users/noranusairat/Downloads/Mohammad/PP25/A2/Homework-2-main/build/CMakeFiles/matmul.dir
+/Users/noranusairat/Downloads/Mohammad/PP25/A2/Homework-2-main/build/CMakeFiles/edit_cache.dir
+/Users/noranusairat/Downloads/Mohammad/PP25/A2/Homework-2-main/build/CMakeFiles/rebuild_cache.dir
