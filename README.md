@@ -4,10 +4,11 @@ Block size that gave the best speed up results: blocked_matmul with block size B
 
 Fastest parallel execution was carried out with 8 threads (read the analysis below tables).
 
-Note that for each test in the data folder, 3 result files are generated: 
-result_naive.raw
-result_blocked.raw
-result_parallel.raw
+Note that for each test in the data folder, 3 result files are generated:  
+- `result_naive.raw`  
+- `result_blocked.raw`  
+- `result_parallel.raw`
+
 
 Building: Cmake was used for building using g++14,gcc 14.
 
