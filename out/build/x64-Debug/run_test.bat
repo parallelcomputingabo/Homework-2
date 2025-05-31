@@ -13,7 +13,7 @@ for /L %%M in (0,1,9) do (
     echo Running mode %%M >> %OUTPUT_FILE%
     echo ------------------------- >> %OUTPUT_FILE%
     
-    :: Run 3 times for each mode
+    :: Run 5 times for each mode
     for /L %%R in (1,1,5) do (
         echo Run %%R >> %OUTPUT_FILE%
         matmul.exe %%M >> %OUTPUT_FILE%

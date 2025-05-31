@@ -9,7 +9,8 @@
 using namespace std;
 namespace fs = filesystem;
 
-void naive_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
+void naive_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p)
+{
     // A is m x n, B is n x p, C is m x p
     for (uint32_t i = 0; i < m; i++) // Rows of A
     {
@@ -23,10 +24,11 @@ void naive_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t
     }
 }
 
-void blocked_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size) {
+void blocked_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p, uint32_t block_size)
+{
     // A is m x n, B is n x p, C is m x p
     // Use block_size to divide matrices into submatrices
-    uint32_t ii, jj, kk, i , j, k;
+    uint32_t ii, jj, kk, i, j, k;
 
     for (ii = 0; ii < m; ii += block_size)
         for (jj = 0; jj < p; jj += block_size)
@@ -38,7 +40,8 @@ void blocked_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32
                             C[i * p + j] += A[i * n + k] * B[k * p + j];
 }
 
-void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p) {
+void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint32_t p)
+{
     // A is m x n, B is n x p, C is m x p
 #pragma omp parallel for collapse(2)
     for (int i = 0; i < m; i++) // Rows of A
@@ -53,27 +56,30 @@ void parallel_matmul(float *C, float *A, float *B, uint32_t m, uint32_t n, uint3
     }
 }
 
-int read_matrix_dimensions(fs::path path, uint32_t& rows, uint32_t& cols)
+int read_matrix_dimensions(fs::path path, uint32_t &rows, uint32_t &cols)
 {
     ifstream file(path);
-    if (file.is_open()) {
+    if (file.is_open())
+    {
         file >> rows >> cols;
         file.close();
     }
-    else {
+    else
+    {
         return -1;
     }
 
     return 0;
 }
 
-int read_matrix_elements(fs::path path, float* matrix, uint32_t rows, uint32_t cols)
+int read_matrix_elements(fs::path path, float *matrix, uint32_t rows, uint32_t cols)
 {
     ifstream file(path);
-    if (file.is_open()) {
+    if (file.is_open())
+    {
 
         int dummy1, dummy2;
-        file >> dummy1 >> dummy2;  // Skip the dimensions
+        file >> dummy1 >> dummy2; // Skip the dimensions
 
         for (int i = 0; i < rows; i++)
         {
@@ -85,17 +91,19 @@ int read_matrix_elements(fs::path path, float* matrix, uint32_t rows, uint32_t c
 
         file.close();
     }
-    else {
+    else
+    {
         return -1;
     }
 
     return 0;
 }
 
-int write_matrix_result(fs::path filePath, const float* matrix, uint32_t rows, uint32_t cols)
+int write_matrix_result(fs::path filePath, const float *matrix, uint32_t rows, uint32_t cols)
 {
     ofstream file(filePath);
-    if (file.is_open()) {
+    if (file.is_open())
+    {
         // Write rows and columns
         file << rows << " " << cols << "\n";
 
@@ -110,14 +118,16 @@ int write_matrix_result(fs::path filePath, const float* matrix, uint32_t rows, u
 
         file.close();
     }
-    else {
+    else
+    {
         return -1;
     }
 
     return 0;
 }
 
-bool validate_result(fs::path result_file, fs::path reference_file) {
+bool validate_result(fs::path result_file, fs::path reference_file)
+{
     int result;
     uint32_t m, p;
 
@@ -128,8 +138,8 @@ bool validate_result(fs::path result_file, fs::path reference_file) {
         return 1;
     }
 
-    float* C_result = new float[m * p];
-    float* C_reference = new float[m * p];
+    float *C_result = new float[m * p];
+    float *C_reference = new float[m * p];
 
     result = read_matrix_elements(result_file, C_result, m, p);
     if (result == -1)
@@ -174,14 +184,17 @@ bool validate_result(fs::path result_file, fs::path reference_file) {
     return same;
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
         cerr << "Usage: " << argv[0] << " <case_number>" << endl;
         return 1;
     }
 
     int case_number = atoi(argv[1]);
-    if (case_number < 0 || case_number > 9) {
+    if (case_number < 0 || case_number > 9)
+    {
         cerr << "Case number must be between 0 and 9" << endl;
         return 1;
     }
@@ -193,7 +206,7 @@ int main(int argc, char *argv[]) {
     fs::path result_file = folder / "result.raw";
     fs::path reference_file = folder / "output.raw";
 
-    uint32_t m, n, p; 
+    uint32_t m, n, p;
     // A is m x n, B is n x p, C is m x p
 
     // Read input0.raw (matrix A)
@@ -204,7 +217,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    float* A = new float[m * n];
+    float *A = new float[m * n];
 
     result = read_matrix_elements(input0_file, A, m, n);
     if (result == -1)
@@ -221,7 +234,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    float* B = new float[n * p];
+    float *B = new float[n * p];
 
     result = read_matrix_elements(input1_file, B, n, p);
     if (result == -1)
@@ -231,9 +244,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Allocate memory for result matrices
-    float* C_naive = new float[m * p] {0};
-    float* C_blocked = new float[m * p] {0};
-    float* C_parallel = new float[m * p] {0};
+    float *C_naive = new float[m * p]{0};
+    float *C_blocked = new float[m * p]{0};
+    float *C_parallel = new float[m * p]{0};
 
     // Measure performance of naive_matmul
     double start_time = omp_get_wtime();
@@ -241,7 +254,7 @@ int main(int argc, char *argv[]) {
     double naive_time = omp_get_wtime() - start_time;
 
     // Write naive result to file
-    write_matrix_result(result_file, C_naive, m, p);
+    result = write_matrix_result(result_file, C_naive, m, p);
     if (result == -1)
     {
         cerr << "Failed to write to file: " << result_file << endl;
@@ -250,17 +263,18 @@ int main(int argc, char *argv[]) {
 
     // Validate naive result
     bool naive_correct = validate_result(result_file, reference_file);
-    if (!naive_correct) {
+    if (!naive_correct)
+    {
         cerr << "Naive result validation failed for case " << case_number << endl;
     }
- 
+
     // Measure performance of blocked_matmul (use block_size = 32 as default)
     start_time = omp_get_wtime();
     blocked_matmul(C_blocked, A, B, m, n, p, 64);
     double blocked_time = omp_get_wtime() - start_time;
 
     // Write blocked result to file
-    write_matrix_result(result_file, C_blocked, m, p);
+    result = write_matrix_result(result_file, C_blocked, m, p);
     if (result == -1)
     {
         cerr << "Failed to write to file: " << result_file << endl;
@@ -269,7 +283,8 @@ int main(int argc, char *argv[]) {
 
     // Validate blocked result
     bool blocked_correct = validate_result(result_file, reference_file);
-    if (!blocked_correct) {
+    if (!blocked_correct)
+    {
         cerr << "Blocked result validation failed for case " << case_number << endl;
     }
 
@@ -280,7 +295,7 @@ int main(int argc, char *argv[]) {
     double parallel_time = omp_get_wtime() - start_time;
 
     // Write parallel result to file
-    write_matrix_result(result_file, C_parallel, m, p);
+    result = write_matrix_result(result_file, C_parallel, m, p);
     if (result == -1)
     {
         cerr << "Failed to write to file: " << result_file << endl;
@@ -289,7 +304,8 @@ int main(int argc, char *argv[]) {
 
     // Validate parallel result
     bool parallel_correct = validate_result(result_file, reference_file);
-    if (!parallel_correct) {
+    if (!parallel_correct)
+    {
         cerr << "Parallel result validation failed for case " << case_number << endl;
     }
 
