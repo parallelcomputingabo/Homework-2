@@ -4,7 +4,7 @@
 #include <omp.h>
 #include <cmath>
 #include <iomanip>
-
+#include <cstdint> // Pre-emptively adding this one, since this literally might just be a platform thing???
 
 //Copied the old naive matmul implementation
 void naive_matmul(float* C, float* A, float* B, uint32_t m, uint32_t n, uint32_t p)
